@@ -34,4 +34,9 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: #666666;
+    text-align: center;
+}
+
+.page--no-back { /* para dar o espaço do "Voltar" que não está no index */
+    padding-top: 84px;
 }

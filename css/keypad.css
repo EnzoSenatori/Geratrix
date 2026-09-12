@@ -1,0 +1,29 @@
+.keypad {
+    /* cria três colunas. O fr é fração do espaço disponível: três colunas de 1fr dividem a largura em partes iguais, 
+    e as doze teclas se acomodam sozinhas em quatro linhas */
+    grid-template-columns: repeat(3, 1fr);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+}
+
+.keypad__key {
+    min-height: 56px;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    background-color: #ffffff;
+    font-size: 1.25rem;
+    color: #222222;
+    cursor: pointer;
+}
+
+.keypad__key--empty {
+    border: none;
+    background-color: transparent;
+    cursor: default;
+}
+
+.keypad__key--action {
+    color: #666666;
+}

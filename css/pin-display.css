@@ -1,0 +1,20 @@
+.pin-display {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.pin-display__dot {
+    display: inline-block; /* inline-block mantém o elemento na mesma linha dos irmãos, mas passa a aceitar largura e altura */
+    width: 14px;
+    height: 14px;
+    border: 2px solid #cccccc;
+    border-radius: 50%;
+}
+
+.pin-display__dot--filled { /* apenas para representar */
+    border-color: #1a6b5a;
+    background-color: #1a6b5a;
+}
