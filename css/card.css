@@ -1,0 +1,32 @@
+.card {
+    display: flex;
+    text-decoration: none; /* perde o sublinhado de link */
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    background-color: #ffffff;
+    text-decoration: none;
+    color: #222222;
+}
+
+.card__info {
+    min-width: 0;
+}
+
+.card__title {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.card__text {
+     margin: 2px 0 0;
+     font-size: 0.875rem;
+     color: #666666;
+}
+
+.card:hover { /* Funciona para termos um efeito de clicável (não funciona no modo celular) */
+    border-color: #1a6b5a;
+    background-color: #f7f7f7;
+}

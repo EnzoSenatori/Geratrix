@@ -1,0 +1,11 @@
+.user-list {
+    display: flex;
+    flex-direction: column; /* empilha os itens na vertical */
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+}
+
+.user-list__item {
+    list-style: none;
+}
