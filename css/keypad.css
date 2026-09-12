@@ -3,7 +3,6 @@
     e as doze teclas se acomodam sozinhas em quatro linhas */
     grid-template-columns: repeat(3, 1fr);
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
     gap: 12px;
     margin-bottom: 32px;
 }
