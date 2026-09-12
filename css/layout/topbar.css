@@ -1,0 +1,18 @@
+.topbar {
+    padding: 24px 16px;
+    background-color: #124d40;
+    color: #ffffff;
+}
+
+.topbar__label {
+    margin: 0;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.topbar__title {
+    margin: 2px 0 0;
+    font-size: 1.5rem;
+}

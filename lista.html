@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geratrix</title>
+    <link rel="stylesheet" href="css/base/style.css">
+    <link rel="stylesheet" href="css/layout/page.css">
+    <link rel="stylesheet" href="css/layout/topbar.css">
+    <link rel="stylesheet" href="css/layout/nav.css">
+    <link rel="stylesheet" href="css/components/progress.css">
+    <link rel="stylesheet" href="css/components/filter.css">
+    <link rel="stylesheet" href="css/components/badge.css">
+    <link rel="stylesheet" href="css/components/list.css">
+</head>
+
+<body>
+    <div class="page page--flush">
+        <header class="topbar">
+            <a class="topbar__back" href="abrir-turno.html">← apenas para facilitar navegação vai sair depois</a>
+            <p class="topbar__label">Turno ativo · Têo Casella Mendonça</p>
+            <h1 class="topbar__title">Minha lista</h1>
+
+            <div class="progress">
+                <div class="progress__bar">
+                    <div class="progress__fill"></div>
+                </div>
+                <p class="progress__text">2 de 9 concluídos · 3 atrasados</p>
+            </div>
+        </header>
+
+        <main class="page__content">
+            <ul class="filter">
+                <li class="filter__item filter__item--active">Todos</li>
+                <li class="filter__item">Atrasados</li>
+                <li class="filter__item">Pendentes</li>
+                <li class="filter__item">Feitos</li>
+
+            </ul>
+
+            <ul class="list">
+                <li class="list__item">
+                    <span class="badge badge--alert">09:00</span>
+                    <p class="list__text">Troca de fraldas — Dona Terezinha Lima</p>
+                </li>
+                <li class="list__item">
+                    <span class="badge badge--alert">08:30</span>
+                    <p class="list__text">Medicação da manhã — Dona Maria das Graças</p>
+                </li>
+                <li class="list__item">
+                    <span class="badge badge--warning">09:00</span>
+                    <p class="list__text">Pressão arterial — Dona Maria das Graças</p>
+                </li>
+                <li class="list__item">
+                    <span class="badge badge--warning">09:30</span>
+                    <p class="list__text">Banho assistido — Sr. Antônio Ferreira</p>
+                </li>
+                <li class="list__item">
+                    <span class="badge badge--warning">09:45</span>
+                    <p class="list__text">Glicemia capilar — Sr. José Augusto</p>
+                </li>
+                <li class="list__item">
+                    <span class="badge badge--done">10:00</span>
+                    <p class="list__text">Atividade física — Sr. José Augusto</p>
+                </li>
+                <li class="list__item">
+                    <span class="badge badge--alert">09:00</span>
+                    <p class="list__text">Medicação da manhã — Dona Terezinha Lima</p>
+                </li>
+                <li class="list__item">
+                    <span class="badge badge--warning">10:00</span>
+                    <p class="list__text">Estado geral — Sr. Antônio Ferreira</p>
+                </li>
+                <li class="list__item">
+                    <span class="badge badge--warning">10:30</span>
+                    <p class="list__text">Higiene oral — Dona Maria das Graças</p>
+                </li>
+            </ul>
+        </main>
+
+        <nav class="nav">
+            <a class="nav__item nav__item--active" href="lista.html">Lista</a>
+            <a class="nav__item" href="residente.html">Residentes</a>
+            <a class="nav__item" href="encerrar-turno.html">Encerrar</a>
+        </nav>
+    </div>
+</body>
+
+</html>

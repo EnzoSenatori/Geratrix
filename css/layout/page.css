@@ -40,3 +40,14 @@
 .page--no-back { /* para dar o espaço do "Voltar" que não está no index */
     padding-top: 84px;
 }
+
+.page--flush {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+}
+
+.page__content {
+    flex: 1;
+    padding: 16px 16px 72px;
+}
