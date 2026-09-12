@@ -1,0 +1,24 @@
+/* é o rótulo de status */
+.badge {
+    display: inline-block;
+    flex-shrink: 0; /* impende que o badge encolha quando o texto do item ao lado é longo */
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.badge--alert {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+.badge--warning {
+    background-color: #fef3c7;
+    color: #d97706;
+}
+
+.badge--done {
+    background-color: #dcfce7;
+    color: #16a34a;
+}

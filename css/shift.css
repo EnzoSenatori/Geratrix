@@ -1,0 +1,40 @@
+.shift {
+    margin-bottom: 32px;
+    padding: 16px;
+    border: 1px solid #cccccc;
+    border-left: 4px solid #1a6b5a;
+    border-radius: 8px;
+}
+
+.shift__label {
+    margin: 0;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #666666;
+}
+
+.shift__time {
+    margin: 2px 0 0;
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.shift__unit {
+    margin: 2px 0 0;
+    font-size: 0.875rem;
+    color: #666666;
+}
+
+.shift__from {
+    margin: -8px 0 12px;
+    font-size: 0.8125rem;
+    color: #666666;
+}
+
+.shift__note {
+    margin: 12px 0 0;
+    font-size: 0.75rem;
+    text-align: center;
+    color: #666666;
+}
