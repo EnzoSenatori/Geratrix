@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geratrix — Conferência de Medicação</title>
+    <link rel="stylesheet" href="css/base/style.css">
+    <link rel="stylesheet" href="css/layout/page.css">
+    <link rel="stylesheet" href="css/layout/back.css">
+    <link rel="stylesheet" href="css/components/list.css">
+    <link rel="stylesheet" href="css/components/badge.css">
+    <link rel="stylesheet" href="css/components/form.css">
+    <link rel="stylesheet" href="css/components/button.css">
+</head>
+<body>
+    <div class="page">
+        <a class="back" href="lista.html">← Voltar</a>
+
+        <header class="page__header">
+            <h1 class="page__title">Conferência de Medicação</h1>
+            <p class="page__subtitle">Residente: Dona Maria</p>
+        </header>
+
+        <main>
+            <h2 class="page__section-title">Alergias</h2>
+            <div class="list">
+                <div class="list__item">
+                    <span class="list__text">Dipirona</span>
+                    <span class="badge badge--alert">Alergia Grave</span>
+                </div>
+            </div>
+
+            <h2 class="page__section-title">Medicamentos do Horário (08:00)</h2>
+            <form>
+                <div class="form__group">
+                    <label class="form__option form__option--checked">
+                        <input type="checkbox" checked hidden>
+                        <div class="form__option-text">
+                            <strong>Paracetamol 500mg</strong>
+                            <br><small>1 comprimido — Via oral</small>
+                        </div>
+                        <span class="badge badge--done">Administrado</span>
+                    </label>
+
+                    <label class="form__option">
+                        <input type="checkbox" hidden>
+                        <div class="form__option-text">
+                            <strong>Losartana 50mg</strong>
+                            <br><small>1 comprimido — Via oral</small>
+                        </div>
+                        <span class="badge badge--warning">Pendente</span>
+                    </label>
+                </div>
+
+                <div class="form__actions">
+                    <button class="button button--primary button--block" type="button">Confirmar Administração</button>
+                </div>
+            </form>
+        </main>
+    </div>
+</body>
+</html>
