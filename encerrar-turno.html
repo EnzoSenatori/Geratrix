@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geratrix — Encerrar Turno</title>
+    <link rel="stylesheet" href="css/base/style.css">
+    <link rel="stylesheet" href="css/layout/page.css">
+    <link rel="stylesheet" href="css/layout/back.css">
+    <link rel="stylesheet" href="css/components/shift.css">
+    <link rel="stylesheet" href="css/components/list.css">
+    <link rel="stylesheet" href="css/components/badge.css">
+    <link rel="stylesheet" href="css/components/form.css">
+    <link rel="stylesheet" href="css/components/button.css">
+</head>
+<body>
+    <div class="page">
+        <a class="back" href="lista.html">← Voltar</a>
+
+        <header class="page__header">
+            <h1 class="page__title">Encerrar Turno</h1>
+            <p class="page__subtitle">Resumo e passagem de plantão</p>
+        </header>
+
+        <main>
+            <!-- Resumo do turno -->
+            <div class="shift">
+                <span class="shift__label">Plantão Diurno</span>
+                <span class="shift__time">07:00 às 19:00</span>
+                <span class="shift__unit">Setor A — Ala Sul</span>
+                <span class="shift__from">Cuidadora: Ana Maria</span>
+            </div>
+
+            <!-- Lista de pendências -->
+            <h2 class="page__section-title">Pendências do Turno</h2>
+            <div class="list">
+                <div class="list__item">
+                    <div class="list__text">
+                        <strong>Checagem de temperatura</strong>
+                        <br><small>Residente: Sr. João</small>
+                    </div>
+                    <span class="badge badge--warning">Pendente</span>
+                </div>
+                <div class="list__item">
+                    <div class="list__text">
+                        <strong>Medicação das 18:00</strong>
+                        <br><small>Residente: Dona Maria</small>
+                    </div>
+                    <span class="badge badge--warning">Pendente</span>
+                </div>
+            </div>
+
+            <!-- Formulário de Passagem de Plantão -->
+            <form>
+                <div class="form__group">
+                    <label class="form__label" for="passagem">Passagem de Plantão / Observações</label>
+                    <textarea class="form__textarea" id="passagem" rows="4" placeholder="Descreva as ocorrências relevantes do plantão..."></textarea>
+                </div>
+
+                <div class="form__actions">
+                    <button class="button button--primary button--block" type="button">Encerrar Turno</button>
+                </div>
+            </form>
+        </main>
+    </div>
+</body>
+</html>
