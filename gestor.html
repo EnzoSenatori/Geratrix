@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geratrix — Painel do Gestor</title>
+    <link rel="stylesheet" href="css/base/style.css">
+    <link rel="stylesheet" href="css/layout/page.css">
+    <link rel="stylesheet" href="css/layout/back.css">
+    <link rel="stylesheet" href="css/components/avatar.css">
+    <link rel="stylesheet" href="css/components/badge.css">
+    <link rel="stylesheet" href="css/components/card.css">
+    <link rel="stylesheet" href="css/components/user-list.css">
+    <link rel="stylesheet" href="css/components/button.css">
+</head>
+<body>
+    <div class="page">
+        <a class="back" href="index.html">← Sair</a>
+
+        <header class="page__header">
+            <h1 class="page__title">Painel do Gestor</h1>
+            <p class="page__subtitle">Gerenciamento de Cuidadores</p>
+        </header>
+
+        <main>
+            <h2 class="page__section-title">Equipe de Cuidadores</h2>
+
+            <div class="user-list">
+                <a class="card" href="#">
+                    <span class="avatar">AM</span>
+                    <div class="card__info">
+                        <span class="card__title">Ana Maria</span>
+                        <span class="card__text">Plantão Diurno — Setor A</span>
+                    </div>
+                    <span class="badge badge--done">Ativo</span>
+                </a>
+
+                <a class="card" href="#">
+                    <span class="avatar">CS</span>
+                    <div class="card__info">
+                        <span class="card__title">Carla Silva</span>
+                        <span class="card__text">Plantão Noturno — Setor B</span>
+                    </div>
+                    <span class="badge badge--done">Ativo</span>
+                </a>
+
+                <a class="card" href="#">
+                    <span class="avatar">RO</span>
+                    <div class="card__info">
+                        <span class="card__title">Roberto Oliveira</span>
+                        <span class="card__text">Afastado / Licença</span>
+                    </div>
+                    <span class="badge badge--alert">Inativo</span>
+                </a>
+            </div>
+
+            <div style="margin-top: 24px;">
+                <button class="button button--primary button--block" type="button">Cadastrar Novo Cuidador</button>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
