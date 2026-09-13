@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geratrix — Histórico do Residente</title>
+    <link rel="stylesheet" href="css/base/style.css">
+    <link rel="stylesheet" href="css/layout/page.css">
+    <link rel="stylesheet" href="css/layout/back.css">
+    <link rel="stylesheet" href="css/components/filter.css">
+    <link rel="stylesheet" href="css/components/list.css">
+    <link rel="stylesheet" href="css/components/badge.css">
+</head>
+<body>
+    <div class="page">
+        <a class="back" href="residente.html">← Voltar</a>
+
+        <header class="page__header">
+            <h1 class="page__title">Histórico de Registros</h1>
+            <p class="page__subtitle">Residente: Dona Maria</p>
+        </header>
+
+        <main>
+            <!-- Filtros por período -->
+            <div class="filter">
+                <button class="filter__item filter__item--active" type="button">Hoje</button>
+                <button class="filter__item" type="button">7 dias</button>
+                <button class="filter__item" type="button">30 dias</button>
+            </div>
+
+            <!-- Lista de registros do histórico -->
+            <h2 class="page__section-title">Ocorrências e Registros</h2>
+            <div class="list">
+                <div class="list__item">
+                    <div class="list__text">
+                        <strong>Pressão Arterial: 120/80 mmHg</strong>
+                        <br><small>Medição realizada sem intercorrências</small>
+                        <br><span class="badge badge--done">Imutável</span>
+                    </div>
+                    <span class="badge">08:30</span>
+                </div>
+
+                <div class="list__item">
+                    <div class="list__text">
+                        <strong>Administração de Paracetamol 500mg</strong>
+                        <br><small>Medicação administrada no horário</small>
+                        <br><span class="badge badge--done">Imutável</span>
+                    </div>
+                    <span class="badge">08:00</span>
+                </div>
+
+                <div class="list__item">
+                    <div class="list__text">
+                        <strong>Relato de tontura leve</strong>
+                        <br><small>Registro corrigido pela cuidadora em turno</small>
+                        <br><span class="badge badge--warning">Retificado</span>
+                    </div>
+                    <span class="badge">07:15</span>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
