@@ -11,3 +11,10 @@
     font-size: 0.875rem;
     font-weight: bold;
 }
+
+.avatar--large {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 12px;
+    font-size: 1.5rem;
+}

@@ -8,8 +8,8 @@
 }
 
 .page__header {
-    margin-bottom: 32px;
-    padding-bottom: 24px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
     border-bottom: 1px solid #e5e5e5;
     text-align: center;
 }
@@ -28,7 +28,7 @@
 }
 
 .page__section-title {
-    margin: 0 0 16px;
+    margin: 20px 0 8px;
     font-size: 0.8125rem;
     font-weight: bold;
     text-transform: uppercase;
