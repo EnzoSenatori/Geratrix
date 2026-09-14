@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar estado geral - Geratrix</title>
+    <link rel="stylesheet" href="css/base/style.css">
+    <link rel="stylesheet" href="css/layout/page.css">
+    <link rel="stylesheet" href="css/layout/back.css">
+    <link rel="stylesheet" href="css/components/form.css">
+    <link rel="stylesheet" href="css/components/button.css">
+    <link rel="stylesheet" href="css/components/filter.css">
+</head>
+
+<body>
+    <div class="page">
+        <a class="back" href="lista.html">← Voltar</a>
+
+        <header class="page__header">
+            <h1 class="page__title">Antônio Ferreira</h1>
+            <p class="page__subtitle">Estado geral · 10:00</p>
+        </header>
+
+        <main>
+            <h2 class="page__section-title">Registrar estado geral</h2>
+
+            <form class="form">
+                <div class="form__group">
+                    <span class="form__label" id="escala-label">Como está o residente?</span>
+                    <p class="form__hint" id="escala-referencia">
+                        1 = Muito mal · 5 = Muito bem
+                    </p>
+
+                    <!-- A opção 3 representa o estado selecionado neste protótipo estático. -->
+                    <div class="filter" role="group" aria-labelledby="escala-label" aria-describedby="escala-referencia">
+                        <button class="button filter__item" type="button" aria-label="1 - Muito mal" aria-pressed="false">1</button>
+                        <button class="button filter__item" type="button" aria-label="2 - Mal" aria-pressed="false">2</button>
+                        <button class="button filter__item filter__item--active" type="button" aria-label="3 - Regular" aria-pressed="true">3</button>
+                        <button class="button filter__item" type="button" aria-label="4 - Bem" aria-pressed="false">4</button>
+                        <button class="button filter__item" type="button" aria-label="5 - Muito bem" aria-pressed="false">5</button>
+                    </div>
+
+                    <p class="form__hint">Selecionado: 3 — Regular</p>
+                </div>
+
+                <div class="form__group">
+                    <label class="form__label" for="observacao">
+                        Observação (opcional)
+                    </label>
+                    <textarea
+                        class="form__input form__textarea"
+                        id="observacao"
+                        name="observacao"
+                        rows="4"
+                        placeholder="Descreva o estado geral do residente."
+                    ></textarea>
+                </div>
+
+                <div class="form__actions">
+                    <a class="button button--primary button--block" href="lista.html">
+                        Registrar avaliação
+                    </a>
+                    <a class="button button--block" href="lista.html">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </main>
+    </div>
+</body>
+
+</html>
