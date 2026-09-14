@@ -21,3 +21,11 @@
     min-width: 0;
     font-size: 0.875rem;
 }
+.list__text--link {/*modificador para textos clicáveis e respeitar a altura mínima de toque.*/
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-height: 44px;
+    color: #1a6b5a;
+    text-decoration: none;
+}

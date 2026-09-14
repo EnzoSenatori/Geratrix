@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="css/components/filter.css">
     <link rel="stylesheet" href="css/components/badge.css">
     <link rel="stylesheet" href="css/components/list.css">
+    <link rel="stylesheet" href="css/components/button.css">
 </head>
 
 <body>
@@ -45,11 +46,14 @@
                 </li>
                 <li class="list__item">
                     <span class="badge badge--alert">08:30</span>
-                    <p class="list__text">Medicação da manhã — Dona Maria das Graças</p>
-                </li>
+                    <a class="list__text list__text--link" href="medicacao.html">
+                        Medicação da manhã — Dona Maria das Graças
+                    </a>
                 <li class="list__item">
                     <span class="badge badge--warning">09:00</span>
-                    <p class="list__text">Pressão arterial — Dona Maria das Graças</p>
+                    <a class="list__text list__text--link" href="checkin-medicao.html">
+                        Pressão arterial — Dona Maria das Graças
+                    </a>
                 </li>
                 <li class="list__item">
                     <span class="badge badge--warning">09:30</span>
@@ -69,13 +73,20 @@
                 </li>
                 <li class="list__item">
                     <span class="badge badge--warning">10:00</span>
-                    <p class="list__text">Estado geral — Sr. Antônio Ferreira</p>
+                    <a class="list__text list__text--link" href="checkin-subjetivo.html">
+                        Estado geral — Sr. Antônio Ferreira
+                    </a>
                 </li>
                 <li class="list__item">
                     <span class="badge badge--warning">10:30</span>
-                    <p class="list__text">Higiene oral — Dona Maria das Graças</p>
+                    <a class="list__text list__text--link" href="checkin-tarefa.html">
+                        Higiene oral — Dona Maria das Graças
+                    </a>
                 </li>
             </ul>
+            <a class="button button--primary button--block" href="checkin-espontaneo.html">
+                Nova observação
+            </a>
         </main>
 
         <nav class="nav">
