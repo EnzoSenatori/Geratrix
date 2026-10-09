@@ -1,0 +1,21 @@
+
+.scale {
+  display: flex;
+  gap: 6px;
+}
+
+.scale__item {
+  flex: 1;
+  min-height: 44px;
+  border: 1px solid #cccccc;
+  border-radius: 8px;
+  background-color: #ffffff;
+  font-size: 0.8125rem;
+  color: #444444;
+}
+
+.scale__item--active {
+  border-color: #1a6b5a;
+  background-color: #1a6b5a;
+  color: #ffffff;
+}

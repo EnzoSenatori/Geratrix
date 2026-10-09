@@ -1,64 +1,104 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geratrix — Histórico do Residente</title>
-    <link rel="stylesheet" href="css/base/style.css">
-    <link rel="stylesheet" href="css/layout/page.css">
-    <link rel="stylesheet" href="css/layout/back.css">
-    <link rel="stylesheet" href="css/components/filter.css">
-    <link rel="stylesheet" href="css/components/list.css">
-    <link rel="stylesheet" href="css/components/badge.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geratrix — Histórico do Residente</title>
+  <link rel="stylesheet" href="css/base/style.css">
+  <link rel="stylesheet" href="css/layout/page.css">
+  <link rel="stylesheet" href="css/layout/back.css">
+  <link rel="stylesheet" href="css/components/filter.css">
+  <link rel="stylesheet" href="css/components/list.css">
+  <link rel="stylesheet" href="css/components/badge.css">
+  <link rel="stylesheet" href="css/components/trend.css">
 </head>
 <body>
-    <div class="page">
-        <a class="back" href="residente.html">← Voltar</a>
+  <div class="page">
+    <header class="page__header">
+      <a class="back" href="residente.html">‹ Voltar</a>
+      <h1 class="page__title">Histórico de Registros</h1>
+      <p class="page__subtitle">Residente: Maria das Graças</p>
+    </header>
 
-        <header class="page__header">
-            <h1 class="page__title">Histórico de Registros</h1>
-            <p class="page__subtitle">Residente: Dona Maria</p>
-        </header>
+    <main>
+      <div class="filter">
+        <button class="filter__item" type="button">Hoje</button>
+        <button class="filter__item filter__item--active" type="button">7 dias</button>
+        <button class="filter__item" type="button">30 dias</button>
+      </div>
 
-        <main>
-            <!-- Filtros por período -->
-            <div class="filter">
-                <button class="filter__item filter__item--active" type="button">Hoje</button>
-                <button class="filter__item" type="button">7 dias</button>
-                <button class="filter__item" type="button">30 dias</button>
-            </div>
+      <h2 class="page__section-title">Evolução — Extensão de joelho</h2>
+      <div class="trend">
+        <p class="trend__title">ADM média por sessão (°)</p>
+        <svg class="trend__chart" viewBox="0 0 320 150" role="img" aria-label="ADM média por sessão">
+          <line x1="28" y1="120" x2="315" y2="120" stroke="#cccccc"/>
+          <line x1="28" y1="60" x2="315" y2="60" stroke="#d97706" stroke-dasharray="4 3"/>
+          <text x="24" y="63" font-size="9" fill="#d97706" text-anchor="end">60</text>
+          <text x="24" y="123" font-size="9" fill="#666666" text-anchor="end">0</text>
+          
+          <g fill="#1a6b5a">
+            <rect x="40" y="66" width="34" height="54" rx="3"/>
+            <rect x="96" y="62" width="34" height="58" rx="3"/>
+            <rect x="152" y="58" width="34" height="62" rx="3"/>
+            <rect x="208" y="52" width="34" height="68" rx="3"/>
+            <rect x="264" y="52" width="34" height="68" rx="3"/>
+          </g>
+          
+          <g font-size="9" fill="#222222" text-anchor="middle">
+            <text x="57" y="62">54</text>
+            <text x="113" y="58">58</text>
+            <text x="169" y="54">62</text>
+            <text x="225" y="48">68</text>
+            <text x="281" y="48">68</text>
+          </g>
+          
+          <g font-size="9" fill="#666666" text-anchor="middle">
+            <text x="57" y="134">02/10</text>
+            <text x="113" y="134">03/10</text>
+            <text x="169" y="134">05/10</text>
+            <text x="225" y="134">07/10</text>
+            <text x="281" y="134">08/10</text>
+            
+            <text x="57" y="146">22/30</text>
+            <text x="113" y="146">24/30</text>
+            <text x="169" y="146">26/30</text>
+            <text x="225" y="146">28/30</text>
+            <text x="281" y="146">27/30</text>
+          </g>
+        </svg>
+        <p class="trend__legend">Linha tracejada: ADM mínima prescrita • abaixo de cada data: repetições válidas</p>
+      </div>
 
-            <!-- Lista de registros do histórico -->
-            <h2 class="page__section-title">Ocorrências e Registros</h2>
-            <div class="list">
-                <div class="list__item">
-                    <div class="list__text">
-                        <strong>Pressão Arterial: 120/80 mmHg</strong>
-                        <br><small>Medição realizada sem intercorrências</small>
-                        <br><span class="badge badge--done">Imutável</span>
-                    </div>
-                    <span class="badge">08:30</span>
-                </div>
+      <h2 class="page__section-title">Ocorrências e Registros</h2>
+      <div class="list">
+        <div class="list__item">
+          <div class="list__text">
+            <strong>Extensão de joelho: 27/30 válidas</strong>
+            <br><small>3 séries • ADM média 68° • esforço moderado</small>
+            <br><span class="badge badge--device">Dispositivo</span> <span class="badge badge--done">Imutável</span>
+          </div>
+          <span class="badge">10:14</span>
+        </div>
 
-                <div class="list__item">
-                    <div class="list__text">
-                        <strong>Administração de Paracetamol 500mg</strong>
-                        <br><small>Medicação administrada no horário</small>
-                        <br><span class="badge badge--done">Imutável</span>
-                    </div>
-                    <span class="badge">08:00</span>
-                </div>
+        <div class="list__item">
+          <div class="list__text">
+            <strong>Glicemia capilar: 132 mg/dL</strong>
+            <br><small>Medição realizada sem intercorrências</small>
+            <br><span class="badge badge--done">Imutável</span>
+          </div>
+          <span class="badge">09:45</span>
+        </div>
 
-                <div class="list__item">
-                    <div class="list__text">
-                        <strong>Relato de tontura leve</strong>
-                        <br><small>Registro corrigido pela cuidadora em turno</small>
-                        <br><span class="badge badge--warning">Retificado</span>
-                    </div>
-                    <span class="badge">07:15</span>
-                </div>
-            </div>
-        </main>
-    </div>
+        <div class="list__item">
+          <div class="list__text">
+            <strong>Extensão de joelho: realizada</strong>
+            <br><small>Registro manual • caneleira offline</small>
+            <br><span class="badge badge--done">Imutável</span>
+          </div>
+          <span class="badge">06/10</span>
+        </div>
+      </div>
+    </main>
+  </div>
 </body>
 </html>

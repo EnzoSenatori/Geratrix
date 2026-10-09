@@ -1,0 +1,25 @@
+.trend {
+  margin: 0 0 8px;
+  padding: 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+}
+
+.trend__title {
+  margin: 0 0 8px;
+  font-size: 0.8125rem;
+  font-weight: bold;
+  color: #444444;
+}
+
+.trend__chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.trend__legend {
+  margin: 6px 0 0;
+  font-size: 0.6875rem;
+  color: #666666;
+}

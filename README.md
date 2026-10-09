@@ -14,6 +14,7 @@ O projeto utiliza HTML e CSS puros, com os estilos organizados conforme a metodo
 - Registro de tarefa → justificativa de não realização.
 - Lista → observação espontânea → retorno à lista.
 - Lista → residente → histórico.
+- Lista → registro de exercício com a caneleira → retorno à lista.
 - Lista → encerramento do turno.
 - Perfil gestor → painel de cuidadores.
 
@@ -28,6 +29,7 @@ O projeto utiliza HTML e CSS puros, com os estilos organizados conforme a metodo
 | Residente | `residente.html` |
 | Registro de tarefa | `checkin-tarefa.html` |
 | Registro de medição | `checkin-medicao.html` |
+| Registro de exercício (caneleira) | `checkin-exercicio.html` |
 | Avaliação subjetiva | `checkin-subjetivo.html` |
 | Observação espontânea | `checkin-espontaneo.html` |
 | Não realizado | `nao-realizado.html` |
@@ -45,7 +47,7 @@ O projeto utiliza HTML e CSS puros, com os estilos organizados conforme a metodo
 | `topbar` | `topbar__back`, `topbar__label`, `topbar__title` | — |
 | `nav` | `nav__item` | `nav__item--active` |
 | `avatar` | — | `avatar--large` |
-| `badge` | — | `badge--alert`, `badge--warning`, `badge--done` |
+| `badge` | — | `badge--alert`, `badge--warning`, `badge--done`, `badge--device` |
 | `button` | — | `button--primary`, `button--block` |
 | `card` | `card__info`, `card__title`, `card__text` | — |
 | `user-list` | `user-list__item` | — |
@@ -57,6 +59,11 @@ O projeto utiliza HTML e CSS puros, com os estilos organizados conforme a metodo
 | `pin-user` | `pin-user__name` | — |
 | `pin-display` | `pin-display__dot` | `pin-display__dot--filled` |
 | `keypad` | `keypad__key` | `keypad__key--empty`, `keypad__key--action` |
+| `device` | `device__dot`, `device__name`, `device__meta` | `device__dot--offline` |
+| `prescription` | `prescription__item`, `prescription__value`, `prescription__label`, `prescription__note` | — |
+| `series` | — | `series_row--running` |
+| `scale` | `scale__item` | `scale__item--active` |
+| `trend` | `trend__title`, `trend__chart`, `trend__legend` | — |
 
 ## Organização
 
