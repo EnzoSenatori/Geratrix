@@ -304,6 +304,77 @@ def checkin_item(item_id):
         status_item=status_item
     )
 
+# Rota para registro de item não realizado (US-11)
+@app.route("/checkin/<int:item_id>/nao-realizado", methods=["GET", "POST"])
+def checkin_nao_realizado(item_id):
+    from flask import session, redirect, request, render_template
+    from datetime import date
+
+    cuidador_id = session.get("cuidador_id")
+    turno_id = session.get("turno_id")
+
+    if not cuidador_id or not turno_id:
+        return redirect("/")
+
+    db = get_db()
+    data_hoje = date.today().isoformat()
+
+    item = db.execute(
+        """SELECT i.*, r.nome AS residente, t.nome AS tipo, t.natureza
+           FROM item_rotina i
+           JOIN residente r ON r.id = i.residente_id
+           JOIN tipo_checkin t ON t.id = i.tipo_id
+           WHERE i.id = ?""",
+        (item_id,)
+    ).fetchone()
+
+    if not item:
+        return redirect("/lista")
+
+    # Impede novo registro se já foi feito hoje (RN-03)
+    ja_feito = db.execute(
+        "SELECT id FROM checkin WHERE item_id = ? AND date(registrado_em) = ?",
+        (item_id, data_hoje)
+    ).fetchone()
+
+    if ja_feito:
+        return redirect("/lista")
+
+    motivos = {
+        "recusa": "Recusa do residente",
+        "dormindo": "Residente dormindo",
+        "material-indisponivel": "Material indisponível",
+        "emergencia": "Emergência"
+    }
+
+    erro = None
+    if request.method == "POST":
+        motivo_selecionado = request.form.get("motivo")
+        observacao = request.form.get("observacao", "")
+
+        # Exige motivo válido (RN-04)
+        if not motivo_selecionado or motivo_selecionado not in motivos:
+            erro = "Escolha um motivo."
+        else:
+            salvar_checkin(
+                db, item_id, turno_id, cuidador_id,
+                status="nao_realizado",
+                motivo=motivos[motivo_selecionado],
+                observacao=observacao
+            )
+            return redirect("/lista")
+
+    hora_atual = HORA_DEMO or "09:40"
+    status_item = "Atrasado" if item["horario"] < hora_atual else "Pendente"
+
+    return render_template(
+        "nao-realizado.html",
+        item=item,
+        status_item=status_item,
+        motivos=motivos,
+        erro=erro
+    )
+
     
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
