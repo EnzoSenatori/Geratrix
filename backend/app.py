@@ -481,7 +481,7 @@ def turno_encerrar():
         # Gera a lista de pendencias em texto (uma por linha)
         linhas_pendencias = []
         for p in pendentes:
-            linhas_pendencias.append(f"{p['tipo']} {p['residente']} ({p['horario']})")
+            linhas_pendencias.append(f"{p['tipo']} — {p['residente']} ({p['horario']})")
         
         pendencias_texto = "\n".join(linhas_pendencias)
         agora_str = data_hoje + " " + hora_atual + ":00"
