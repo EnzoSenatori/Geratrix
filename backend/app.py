@@ -165,6 +165,79 @@ def sair():
     from flask import session, redirect
     session.clear()
     return redirect("/")
+
+# Consulta e calcula os itens do dia aplicados a RN-07 (US-06)
+def itens_do_dia(db, data_iso, hora_atual):
+    query = """
+        SELECT i.id, i.horario, r.nome AS residente, t.nome AS tipo, t.natureza,
+               t.unidade, t.faixa_min, t.faixa_max,
+               c.status AS registro, c.fora_da_faixa, c.motivo
+        FROM item_rotina i
+        JOIN residente r ON r.id = i.residente_id
+        JOIN tipo_checkin t ON t.id = i.tipo_id
+        LEFT JOIN checkin c ON c.item_id = i.id AND date(c.registrado_em) = ?
+    """
+    rows = db.execute(query, (data_iso,)).fetchall()
     
+    itens = []
+    ordem_status = {"atrasado": 0, "pendente": 1, "feito": 2}
+
+    for row in rows:
+        item = dict(row)
+        if item["registro"] is not None:
+            item["status_calculado"] = "feito"
+        elif item["horario"] < hora_atual:
+            item["status_calculado"] = "atrasado"
+        else:
+            item["status_calculado"] = "pendente"
+        itens.append(item)
+
+    # Ordena por (atrasado, pendente, feito) e por horário dentro de cada grupo
+    itens.sort(key=lambda x: (ordem_status[x["status_calculado"]], x["horario"]))
+    return itens
+
+# Rota principal do turno ativo: Lista do agora (US-06)
+@app.route("/lista")
+def lista():
+    from flask import session, redirect, request
+    from datetime import date
+
+    cuidador_id = session.get("cuidador_id")
+    turno_id = session.get("turno_id")
+
+    if not cuidador_id or not turno_id:
+        return redirect("/")
+
+    db = get_db()
+    cuidador = db.execute("SELECT * FROM cuidador WHERE id = ?", (cuidador_id,)).fetchone()
+
+    hora_atual = HORA_DEMO or "09:40"
+    data_hoje = date.today().isoformat()
+
+    todos_itens = itens_do_dia(db, data_hoje, hora_atual)
+
+    total = len(todos_itens)
+    feitos = sum(1 for i in todos_itens if i["status_calculado"] == "feito")
+    atrasados = sum(1 for i in todos_itens if i["status_calculado"] == "atrasado")
+    progresso = int((feitos / total) * 100) if total > 0 else 0
+
+    filtro = request.args.get("filtro")
+    if filtro in ["atrasado", "pendente", "feito"]:
+        itens_filtrados = [i for i in todos_itens if i["status_calculado"] == filtro]
+    else:
+        itens_filtrados = todos_itens
+
+    return render_template(
+        "lista.html",
+        cuidador=cuidador,
+        itens=itens_filtrados,
+        total=total,
+        feitos=feitos,
+        atrasados=atrasados,
+        progresso=progresso,
+        filtro_atual=filtro
+    )
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
