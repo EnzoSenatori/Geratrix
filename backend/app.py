@@ -238,6 +238,72 @@ def lista():
         filtro_atual=filtro
     )
 
+# Salva um novo check-in imutavel no banco de dados (RN-01, RN-02)
+def salvar_checkin(db, item_id, turno_id, cuidador_id, status, valor=None, fora=0, motivo=None, observacao=""):
+    from datetime import datetime
+    agora_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cursor = db.cursor()
+    cursor.execute(
+        """INSERT INTO checkin (item_id, turno_id, cuidador_id, status, valor, fora_da_faixa, motivo, observacao, registrado_em)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (item_id, turno_id, cuidador_id, status, valor, fora, motivo, observacao, agora_str)
+    )
+    db.commit()
 
+# Rota de check-in para tarefas e redirecionador para medições (US-07)
+@app.route("/checkin/<int:item_id>", methods=["GET", "POST"])
+def checkin_item(item_id):
+    from flask import session, redirect, request, render_template
+    from datetime import date
+
+    cuidador_id = session.get("cuidador_id")
+    turno_id = session.get("turno_id")
+
+    if not cuidador_id or not turno_id:
+        return redirect("/")
+
+    db = get_db()
+    data_hoje = date.today().isoformat()
+
+    item = db.execute(
+        """SELECT i.*, r.nome AS residente, t.nome AS tipo, t.natureza, t.unidade, t.faixa_min, t.faixa_max
+           FROM item_rotina i
+           JOIN residente r ON r.id = i.residente_id
+           JOIN tipo_checkin t ON t.id = i.tipo_id
+           WHERE i.id = ?""",
+        (item_id,)
+    ).fetchone()
+
+    if not item:
+        return redirect("/lista")
+
+    # Verifica se já tem registro hoje (RN-03)
+    ja_feito = db.execute(
+        "SELECT id FROM checkin WHERE item_id = ? AND date(registrado_em) = ?",
+        (item_id, data_hoje)
+    ).fetchone()
+
+    if ja_feito:
+        return redirect("/lista")
+
+    # Se for medição, encaminha para a rota específica (Passo 8)
+    if item["natureza"] == "medicao":
+        return redirect(f"/checkin/{item_id}/medicao")
+
+    if request.method == "POST":
+        observacao = request.form.get("observacao", "")
+        salvar_checkin(db, item_id, turno_id, cuidador_id, "realizado", observacao=observacao)
+        return redirect("/lista")
+
+    hora_atual = HORA_DEMO or "09:40"
+    status_item = "Atrasado" if item["horario"] < hora_atual else "Pendente"
+
+    return render_template(
+        "checkin-tarefa.html",
+        item=item,
+        status_item=status_item
+    )
+
+    
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
