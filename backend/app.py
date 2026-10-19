@@ -375,6 +375,86 @@ def checkin_nao_realizado(item_id):
         erro=erro
     )
 
-    
+# Rota para registro de medicao com alerta em duas etapas (US-09, US-13)
+@app.route("/checkin/<int:item_id>/medicao", methods=["GET", "POST"])
+def checkin_medicao(item_id):
+    from flask import session, redirect, request, render_template
+    from datetime import date
+
+    cuidador_id = session.get("cuidador_id")
+    turno_id = session.get("turno_id")
+
+    if not cuidador_id or not turno_id:
+        return redirect("/")
+
+    db = get_db()
+    data_hoje = date.today().isoformat()
+
+    item = db.execute(
+        """SELECT i.*, r.nome AS residente, t.nome AS tipo, t.natureza, t.unidade, t.faixa_min, t.faixa_max
+           FROM item_rotina i
+           JOIN residente r ON r.id = i.residente_id
+           JOIN tipo_checkin t ON t.id = i.tipo_id
+           WHERE i.id = ?""",
+        (item_id,)
+    ).fetchone()
+
+    if not item or item["natureza"] != "medicao":
+        return redirect("/lista")
+
+    # Impede novo registro se já foi feito hoje (RN-03)
+    ja_feito = db.execute(
+        "SELECT id FROM checkin WHERE item_id = ? AND date(registrado_em) = ?",
+        (item_id, data_hoje)
+    ).fetchone()
+
+    if ja_feito:
+        return redirect("/lista")
+
+    erro = None
+    alerta_fora = False
+    valor_digitado = ""
+    confirmado = False
+
+    if request.method == "POST":
+        valor_str = request.form.get("valor", "").replace(",", ".").strip()
+        observacao = request.form.get("observacao", "")
+        confirmado_str = request.form.get("confirmado", "0")
+
+        try:
+            valor_float = float(valor_str)
+            valor_digitado = valor_str
+
+            min_val = item["faixa_min"]
+            max_val = item["faixa_max"]
+            esta_fora = (min_val is not None and valor_float < min_val) or (max_val is not None and valor_float > max_val)
+
+            if esta_fora and confirmado_str != "1":
+                alerta_fora = True
+            else:
+                salvar_checkin(
+                    db, item_id, turno_id, cuidador_id,
+                    status="realizado",
+                    valor=valor_float,
+                    fora=1 if esta_fora else 0,
+                    observacao=observacao
+                )
+                return redirect("/lista")
+        except ValueError:
+            erro = "Informe o valor medido."
+
+    hora_atual = HORA_DEMO or "09:40"
+    status_item = "Atrasado" if item["horario"] < hora_atual else "Pendente"
+
+    return render_template(
+        "checkin-medicao.html",
+        item=item,
+        status_item=status_item,
+        erro=erro,
+        alerta_fora=alerta_fora,
+        valor_digitado=valor_digitado
+    )
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
