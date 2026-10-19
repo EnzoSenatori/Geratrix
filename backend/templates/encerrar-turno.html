@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geratrix - Encerrar Turno</title>
+    <link rel="stylesheet" href="/css/base/reset.css">
+    <link rel="stylesheet" href="/css/base/variables.css">
+    <link rel="stylesheet" href="/css/base/typography.css">
+    <link rel="stylesheet" href="/css/layout/app.css">
+    <link rel="stylesheet" href="/css/components/card.css">
+    <link rel="stylesheet" href="/css/components/badge.css">
+    <link rel="stylesheet" href="/css/components/button.css">
+    <link rel="stylesheet" href="/css/components/list.css">
+    <link rel="stylesheet" href="/css/components/form.css">
+</head>
+<body>
+    <div class="app">
+        <header class="app_header">
+            <a href="/lista" class="button button--icon" style="text-decoration: none;">←</a>
+            <h1 class="app_title" style="margin-top: 12px;">Encerramento de turno</h1>
+            <p class="app_subtitle">Confira as pendências e deixe um recado para a equipe</p>
+        </header>
+
+        <main class="app_content">
+            <section style="margin-bottom: 20px;">
+                <h2 style="font-size: 16px; margin-bottom: 8px;">Turno atual</h2>
+                <div class="card">
+                    <p style="margin: 0 0 4px 0;"><strong>Turno {{ cuidador.turno_padrao }} • {{ hora_atual }}</strong></p>
+                    <p style="margin: 0 0 4px 0;">Unidade Central</p>
+                    <p style="margin: 0;">Cuidador: {{ cuidador.nome }}</p>
+                </div>
+            </section>
+
+            <section style="margin-bottom: 20px;">
+                <h2 style="font-size: 16px; margin-bottom: 8px;">Pendências do turno</h2>
+                {% if pendentes %}
+                <ul class="list">
+                    {% for p in pendentes %}
+                    <li class="list_item" style="border-bottom: 1px solid #eee; padding: 8px 0;">
+                        <a href="/checkin/{{ p.id }}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 12px; width: 100%;">
+                            {% if p.status_calculado == 'atrasado' %}
+                            <span class="badge badge--alert">Atrasado</span>
+                            {% else %}
+                            <span class="badge badge--warning">Pendente</span>
+                            {% endif %}
+                            <div class="list_content">
+                                <p class="list_title" style="font-weight: bold; margin: 0;">{{ p.tipo }}</p>
+                                <p class="list_subtitle" style="margin: 0; color: #666;">{{ p.residente }} ({{ p.horario }})</p>
+                            </div>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p style="color: #2e7d32; font-weight: 500;">Nenhuma pendência. Tudo registrado.</p>
+                {% endif %}
+            </section>
+
+            <form class="form" method="post">
+                <div style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px;">
+                    <label for="passagem" style="font-weight: 500; font-size: 14px;">Passagem de plantão (recado para o próximo turno)</label>
+                    <textarea id="passagem" name="passagem" rows="3" placeholder="Digite aqui o recado..." style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; resize: vertical;"></textarea>
+                </div>
+
+                <button type="submit" class="button button--primary button--block">Encerrar e sair</button>
+            </form>
+        </main>
+    </div>
+</body>
+</html>

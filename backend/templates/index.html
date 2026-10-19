@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geratrix - Início</title>
+    <link rel="stylesheet" href="/css/base/reset.css">
+    <link rel="stylesheet" href="/css/base/variables.css">
+    <link rel="stylesheet" href="/css/base/typography.css">
+    <link rel="stylesheet" href="/css/layout/app.css">
+    <link rel="stylesheet" href="/css/components/card.css">
+    <link rel="stylesheet" href="/css/components/avatar.css">
+</head>
+<body>
+    <div class="app">
+        <header class="app_header">
+            <h1 class="app_title">Geratrix</h1>
+            <p class="app_subtitle">Escolha seu perfil para entrar</p>
+        </header>
+
+        <main class="app_content">
+            <div class="cards_grid">
+                {% for c in cuidadores %}
+                <a href="/pin/{{ c.id }}" class="card card--interactive">
+                    <div class="avatar">{{ c.iniciais }}</div>
+                    <div class="card_info">
+                        <h2 class="card_title">{{ c.nome }}</h2>
+                        <p class="card_subtitle">Cuidador • Turno {{ c.turno_padrao }}</p>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </main>
+    </div>
+</body>
+</html>

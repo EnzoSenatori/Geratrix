@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geratrix - Lista do agora</title>
+    <link rel="stylesheet" href="/css/base/reset.css">
+    <link rel="stylesheet" href="/css/base/variables.css">
+    <link rel="stylesheet" href="/css/base/typography.css">
+    <link rel="stylesheet" href="/css/layout/app.css">
+    <link rel="stylesheet" href="/css/components/badge.css">
+    <link rel="stylesheet" href="/css/components/button.css">
+    <link rel="stylesheet" href="/css/components/list.css">
+    <link rel="stylesheet" href="/css/components/progress.css">
+    <link rel="stylesheet" href="/css/components/filter.css">
+    <style>
+        .progress-container {
+            background: #f4f6f8;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .progress-bar-bg {
+            background: #e0e0e0;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        .progress-bar-fill {
+            background: #0d5c4d;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header class="app_header">
+            <a href="/sair" class="button button--icon" style="text-decoration: none;">Sair</a>
+            <h1 class="app_title" style="margin-top: 8px;">Turno ativo {{ cuidador.nome }}</h1>
+            <p class="app_subtitle">Lista de cuidados do dia</p>
+        </header>
+
+        <main class="app_content">
+            <div class="progress-container">
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" style="width: {{ progresso }}%;"></div>
+                </div>
+                <p class="progress_text" style="font-size: 14px; color: #555;">{{ feitos }} de {{ total }} concluídos • {{ atrasados }} atrasados</p>
+            </div>
+
+            <div class="filter" style="margin-bottom: 16px; display: flex; gap: 8px;">
+                <a href="/lista" class="filter_item {% if not filtro_atual %}filter_item--active{% endif %}" style="text-decoration: none;">Todos</a>
+                <a href="/lista?filtro=atrasado" class="filter_item {% if filtro_atual == 'atrasado' %}filter_item--active{% endif %}" style="text-decoration: none;">Atrasados</a>
+                <a href="/lista?filtro=pendente" class="filter_item {% if filtro_atual == 'pendente' %}filter_item--active{% endif %}" style="text-decoration: none;">Pendentes</a>
+                <a href="/lista?filtro=feito" class="filter_item {% if filtro_atual == 'feito' %}filter_item--active{% endif %}" style="text-decoration: none;">Feitos</a>
+            </div>
+
+            <ul class="list">
+                {% for item in itens %}
+                <li class="list_item" style="border-bottom: 1px solid #eee; padding: 12px 0;">
+                    {% if item.status_calculado == 'atrasado' %}
+                        <a href="/checkin/{{ item.id }}" class="list_link" style="text-decoration: none; color: inherit; display: flex; width: 100%; align-items: center; gap: 12px;">
+                            <span class="badge badge--alert">{{ item.horario }}</span>
+                            <div class="list_content">
+                                <p class="list_title" style="font-weight: bold; margin: 0;">{{ item.tipo }}</p>
+                                <p class="list_subtitle" style="margin: 0; color: #666;">{{ item.residente }}</p>
+                            </div>
+                        </a>
+                    {% elif item.status_calculado == 'pendente' %}
+                        <a href="/checkin/{{ item.id }}" class="list_link" style="text-decoration: none; color: inherit; display: flex; width: 100%; align-items: center; gap: 12px;">
+                            <span class="badge badge--warning">{{ item.horario }}</span>
+                            <div class="list_content">
+                                <p class="list_title" style="font-weight: bold; margin: 0;">{{ item.tipo }}</p>
+                                <p class="list_subtitle" style="margin: 0; color: #666;">{{ item.residente }}</p>
+                            </div>
+                        </a>
+                    {% else %}
+                        <div style="display: flex; width: 100%; align-items: center; gap: 12px;">
+                            <span class="badge badge--done">{{ item.horario }}</span>
+                            <div class="list_content">
+                                <p class="list_title" style="font-weight: bold; margin: 0;">{{ item.tipo }}</p>
+                                <p class="list_subtitle" style="margin: 0; color: #666;">
+                                    {{ item.residente }}
+                                    {% if item.registro == 'nao_realizado' %} • Não realizado ({{ item.motivo }}){% endif %}
+                                    {% if item.fora_da_faixa == 1 %} • Fora da faixa{% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+
+            <div style="margin-top: 24px;">
+                <a href="/turno/encerrar" class="button button--secondary button--block" style="text-decoration: none; text-align: center; display: block; width: 100%;">Encerrar turno</a>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

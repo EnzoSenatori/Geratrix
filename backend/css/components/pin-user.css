@@ -1,0 +1,12 @@
+.pin-user {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.pin-user__name {
+    margin: 0;
+    font-weight: bold;
+}

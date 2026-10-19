@@ -1,0 +1,33 @@
+.prescription {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 0;
+}
+
+.prescription__item {
+  padding: 8px 4px;
+  border-radius: 8px;
+  background-color: #f0f7f5;
+  text-align: center;
+}
+
+.prescription__value {
+  display: block;
+  font-size: 1.125rem;
+  font-weight: bold;
+  color: #1a6b5a;
+}
+
+.prescription__label {
+  display: block;
+  font-size: 0.6875rem;
+  color: #666666;
+}
+
+.prescription__note {
+  margin: 6px 0 0;
+  font-size: 0.75rem;
+  color: #666666;
+  text-align: center;
+}

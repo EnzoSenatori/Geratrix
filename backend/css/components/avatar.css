@@ -1,0 +1,20 @@
+.avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* centralizaam as credenciais no eixo */
+    flex-shrink: 0; /* Impede que o círculo se torne uma elipse */
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: #1a6b5a; /* Transforma em círculo, não quadrado */
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: bold;
+}
+
+.avatar--large {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 12px;
+    font-size: 1.5rem;
+}

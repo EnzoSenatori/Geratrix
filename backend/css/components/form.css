@@ -1,0 +1,85 @@
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.form__group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form__label {
+    font-size: 0.8125rem;
+    font-weight: bold;
+    color: #444444;
+}
+
+.form__input {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 1rem;
+    color: #222222;
+    background-color: #ffffff;
+}
+
+.form__input:focus {
+    outline: 2px solid #1a6b5a;
+    outline-offset: 1px;
+    border-color: #1a6b5a;
+}
+
+.form__textarea {
+    min-height: 96px;
+    resize: vertical;
+}
+
+.form__hint {
+    margin: 0;
+    font-size: 0.75rem;
+    color: #666666;
+}
+
+.form__error {
+    margin: 0;
+    font-size: 0.75rem;
+    color: #dc2626;
+}
+
+.form__option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.form__option-text {
+    font-size: 0.875rem;
+}
+
+.form__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form__input--invalid {
+    border-color: #dc2626;
+}
+
+.form__option--checked {
+    border-color: #1a6b5a;
+    background-color: #f0f7f5;
+}
+
+/* comentando para fazer commit */

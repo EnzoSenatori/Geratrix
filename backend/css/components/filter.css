@@ -1,0 +1,25 @@
+.filter {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin: 0 0 16px;
+    padding: 0;
+    overflow-x: auto;
+}
+
+.filter__item {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border: 1px solid #cccccc;
+    border-radius: 16px;
+    font-size: 0.8125rem;
+    color: #666666;
+    list-style: none;
+    cursor: pointer;
+}
+
+.filter__item--active {
+    border-color: #1a6b5a;
+    background-color: #1a6b5a;
+    color: #ffffff;
+}

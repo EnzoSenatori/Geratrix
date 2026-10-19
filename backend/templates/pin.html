@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geratrix - PIN</title>
+    <link rel="stylesheet" href="/css/base/reset.css">
+    <link rel="stylesheet" href="/css/base/variables.css">
+    <link rel="stylesheet" href="/css/base/typography.css">
+    <link rel="stylesheet" href="/css/layout/app.css">
+    <link rel="stylesheet" href="/css/components/card.css">
+    <link rel="stylesheet" href="/css/components/avatar.css">
+    <link rel="stylesheet" href="/css/components/keypad.css">
+    <link rel="stylesheet" href="/css/components/button.css">
+    <link rel="stylesheet" href="/css/components/form.css">
+    <style>
+        .pin-dots {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin: 24px 0;
+        }
+        .pin-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid #0d5c4d;
+            background-color: transparent;
+            transition: all 0.2s ease;
+        }
+        .pin-dot--filled {
+            background-color: #0d5c4d;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header class="app_header">
+            <a href="/" class="button button--icon" style="text-decoration: none;">←</a>
+            <div class="avatar" style="margin-top: 12px;">{{ cuidador.iniciais }}</div>
+            <h1 class="app_title" style="margin-top: 8px;">{{ cuidador.nome }}</h1>
+            <p class="app_subtitle">Digite seu PIN de 4 dígitos</p>
+        </header>
+
+        <main class="app_content">
+            <div class="pin-dots">
+                {% for n in range(4) %}
+                <div class="pin-dot {% if n < preenchidos %}pin-dot--filled{% endif %}"></div>
+                {% endfor %}
+            </div>
+
+            {% if erro %}
+            <p class="form_error" style="text-align: center; margin-bottom: 16px;">{{ erro }}</p>
+            {% endif %}
+
+            <form method="post">
+                <div class="keypad">
+                    <button class="keypad_key" type="submit" name="tecla" value="1">1</button>
+                    <button class="keypad_key" type="submit" name="tecla" value="2">2</button>
+                    <button class="keypad_key" type="submit" name="tecla" value="3">3</button>
+                    <button class="keypad_key" type="submit" name="tecla" value="4">4</button>
+                    <button class="keypad_key" type="submit" name="tecla" value="5">5</button>
+                    <button class="keypad_key" type="submit" name="tecla" value="6">6</button>
+                    <button class="keypad_key" type="submit" name="tecla" value="7">7</button>
+                    <button class="keypad_key" type="submit" name="tecla" value="8">8</button>
+                    <button class="keypad_key" type="submit" name="tecla" value="9">9</button>
+                    <button class="keypad_key keypad_key--empty" type="button" disabled></button>
+                    <button class="keypad_key" type="submit" name="tecla" value="0">0</button>
+                    <button class="keypad_key keypad_key--action" type="submit" name="tecla" value="apagar">⌫</button>
+                </div>
+                <button class="button button--primary button--block" type="submit" name="tecla" value="entrar" style="margin-top: 16px;">Entrar</button>
+            </form>
+        </main>
+    </div>
+</body>
+</html>
