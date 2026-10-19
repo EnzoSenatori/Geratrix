@@ -1,0 +1,31 @@
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0 0 32px;
+    padding: 0;
+}
+
+.list__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    list-style: none;
+}
+
+.list__text {
+    margin: 0;
+    min-width: 0;
+    font-size: 0.875rem;
+}
+.list__text--link {/*modificador para textos clicáveis e respeitar a altura mínima de toque.*/
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-height: 44px;
+    color: #1a6b5a;
+    text-decoration: none;
+}

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geratrix</title>
+    <link rel="stylesheet" href="/css/base/style.css">
+    <link rel="stylesheet" href="/css/layout/page.css">
+    <link rel="stylesheet" href="/css/layout/back.css">
+    <link rel="stylesheet" href="/css/components/avatar.css">
+    <link rel="stylesheet" href="/css/components/button.css">
+    <link rel="stylesheet" href="/css/components/pin-user.css">
+    <link rel="stylesheet" href="/css/components/pin-display.css">
+    <link rel="stylesheet" href="/css/components/keypad.css">
+</head>
+
+<body>
+    <div class="page">
+        <a class="back" href="index.html">← Voltar</a>
+        <header class="page__header">
+            <h1 class="page__title">Login</h1>
+            <p class="page__subtitle">Insira seu código de acesso</p>
+        </header>
+
+        <main>
+            <div class="pin-user">
+                <div class="avatar">TCM</div>
+                <p class="pin-user__name">Têo Casella Mendonça</p>
+            </div>
+
+            <h2 class="page__section-title">PIN</h2>
+
+            <div class="pin-display">
+                <!-- O span não têm texto nem conteúdo, são só forma -->
+                <span class="pin-display__dot pin-display__dot--filled"></span>
+                <span class="pin-display__dot pin-display__dot--filled"></span>
+                <span class="pin-display__dot"></span>
+                <span class="pin-display__dot"></span>
+            </div>
+
+            <div class="keypad">
+                <button class="keypad__key" type="button">1</button>
+                <button class="keypad__key" type="button">2</button>
+                <button class="keypad__key" type="button">3</button>
+                <button class="keypad__key" type="button">4</button>
+                <button class="keypad__key" type="button">5</button>
+                <button class="keypad__key" type="button">6</button>
+                <button class="keypad__key" type="button">7</button>
+                <button class="keypad__key" type="button">8</button>
+                <button class="keypad__key" type="button">9</button>
+                <button class="keypad__key keypad__key--empty" type="button"></button>
+                <button class="keypad__key" type="button">0</button>
+                <button class="keypad__key keypad__key--action" type="button">←</button>
+            </div>
+
+            <a class="button button--primary button--block" href="abrir-turno.html">Entrar</a>
+        </main>
+    </div>
+</body>
+
+</html>

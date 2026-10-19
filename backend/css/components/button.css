@@ -1,0 +1,22 @@
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 12px 20px;
+    border: 2px solid #1a6b5a;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #1a6b5a;
+    text-decoration: none; /* perde o sublinhado de link */
+    cursor: pointer;
+}
+
+.button--primary {
+    background-color: #1a6b5a;
+    color: #ffffff;
+}
+
+.button--block {
+    width: 100%;
+}
