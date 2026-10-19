@@ -47,5 +47,60 @@ def index():
     cuidadores = db.execute("SELECT * FROM cuidador WHERE ativo = 1").fetchall()
     return render_template("index.html", cuidadores=cuidadores)
 
+# Rota de login por PIN do cuidador
+@app.route("/pin/<int:id>", methods=["GET", "POST"])
+def pin(id):
+    from flask import session, redirect, request
+    db = get_db()
+    cuidador = db.execute("SELECT * FROM cuidador WHERE id = ? AND ativo = 1", (id,)).fetchone()
+    
+    if not cuidador:
+        return redirect("/")
+
+    if request.method == "GET" or session.get("pin_de") != id:
+        session["pin"] = ""
+        session["pin_de"] = id
+
+    erro = None
+    pin_atual = session.get("pin", "")
+
+    if request.method == "POST":
+        tecla = request.form.get("tecla")
+        
+        if tecla in [str(i) for i in range(10)]:
+            if len(pin_atual) < 4:
+                pin_atual += tecla
+        elif tecla == "apagar":
+            pin_atual = pin_atual[:-1]
+        elif tecla == "entrar":
+            if pin_atual == cuidador["pin"]:
+                session.clear()
+                session["cuidador_id"] = id
+                
+                # Verifica se o cuidador já tem um turno aberto
+                turno_aberto = db.execute(
+                    "SELECT id FROM turno WHERE cuidador_id = ? AND encerrado_em IS NULL",
+                    (id,)
+                ).fetchone()
+                
+                if turno_aberto:
+                    session["turno_id"] = turno_aberto["id"]
+                    return redirect("/lista")
+                else:
+                    return redirect("/turno/abrir")
+            else:
+                erro = "PIN incorreto. Tente novamente."
+                pin_atual = ""
+
+        session["pin"] = pin_atual
+
+    return render_template(
+        "pin.html",
+        cuidador=cuidador,
+        preenchidos=len(pin_atual),
+        erro=erro
+    )
+
+    
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
