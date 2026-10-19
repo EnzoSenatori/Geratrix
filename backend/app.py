@@ -455,6 +455,56 @@ def checkin_medicao(item_id):
         valor_digitado=valor_digitado
     )
 
+# Rota para encerramento de turno e passagem de plantao (US-03)
+@app.route("/turno/encerrar", methods=["GET", "POST"])
+def turno_encerrar():
+    from flask import session, redirect, request, render_template
+    from datetime import date
+
+    cuidador_id = session.get("cuidador_id")
+    turno_id = session.get("turno_id")
+
+    if not cuidador_id or not turno_id:
+        return redirect("/")
+
+    db = get_db()
+    cuidador = db.execute("SELECT * FROM cuidador WHERE id = ?", (cuidador_id,)).fetchone()
+    hora_atual = HORA_DEMO or "09:40"
+    data_hoje = date.today().isoformat()
+
+    todos_itens = itens_do_dia(db, data_hoje, hora_atual)
+    pendentes = [i for i in todos_itens if i["status_calculado"] in ["atrasado", "pendente"]]
+
+    if request.method == "POST":
+        passagem = request.form.get("passagem", "").strip()
+        
+        # Gera a lista de pendencias em texto (uma por linha)
+        linhas_pendencias = []
+        for p in pendentes:
+            linhas_pendencias.append(f"{p['tipo']} {p['residente']} ({p['horario']})")
+        
+        pendencias_texto = "\n".join(linhas_pendencias)
+        agora_str = data_hoje + " " + hora_atual + ":00"
+
+        cursor = db.cursor()
+        cursor.execute(
+            """UPDATE turno 
+               SET encerrado_em = ?, passagem = ?, pendencias = ? 
+               WHERE id = ?""",
+            (agora_str, passagem, pendencias_texto, turno_id)
+        )
+        db.commit()
+
+        session.clear()
+        return redirect("/")
+
+    return render_template(
+        "encerrar-turno.html",
+        cuidador=cuidador,
+        pendentes=pendentes,
+        hora_atual=hora_atual
+    )
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
