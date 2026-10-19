@@ -15,9 +15,9 @@ def semear():
         cursor.executescript(f.read())
 
     cuidadores = [
-        (1, "Têo Casella Mendonça", "TCM", "Manhã", "1234", 1),
-        (2, "Enzão", "ES", "Tarde", "1234", 1),
-        (3, "Rafael Lord Corrêa", "RC", "Noite", "1234", 1)
+        (1, "Theo Casella Mendonça", "TCM", "Manhã", "1234", 1),
+        (2, "Enzo Senatori", "ES", "Tarde", "1234", 1),
+        (3, "Rafael de Oliveira Corrêa", "RC", "Noite", "1234", 1)
     ]
     cursor.executemany("INSERT INTO cuidador (id, nome, iniciais, turno_padrao, pin, ativo) VALUES (?, ?, ?, ?, ?, ?)", cuidadores)
 
