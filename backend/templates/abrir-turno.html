@@ -1,96 +1,79 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geratrix - Abertura de Turno</title>
-    <link rel="stylesheet" href="/css/base/reset.css">
-    <link rel="stylesheet" href="/css/base/variables.css">
-    <link rel="stylesheet" href="/css/base/typography.css">
-    <link rel="stylesheet" href="/css/layout/app.css">
-    <link rel="stylesheet" href="/css/components/card.css">
-    <link rel="stylesheet" href="/css/components/avatar.css">
-    <link rel="stylesheet" href="/css/components/badge.css">
+    <title>Geratrix</title>
+    <link rel="stylesheet" href="/css/base/style.css">
+    <link rel="stylesheet" href="/css/layout/page.css">
+    <link rel="stylesheet" href="/css/layout/back.css">
     <link rel="stylesheet" href="/css/components/button.css">
-    <link rel="stylesheet" href="/css/components/list.css">
+    <link rel="stylesheet" href="/css/components/badge.css">
     <link rel="stylesheet" href="/css/components/shift.css">
+    <link rel="stylesheet" href="/css/components/list.css">
 </head>
+
 <body>
-    <div class="app">
-        <header class="app_header">
-            <a href="/sair" class="button button--icon" style="text-decoration: none;">←</a>
-            <h1 class="app_title">Abertura de turno</h1>
-            <p class="app_subtitle">Confira as informações do plantão antes de iniciar</p>
+    {% set horarios = {'Manhã': '07:00 – 13:00', 'Tarde': '13:00 – 19:00', 'Noite': '19:00 – 07:00'} %}
+    {% set motivos = {'recusa': 'Recusa do residente', 'dormindo': 'Residente dormindo', 'material-indisponivel': 'Material indisponível', 'emergencia': 'Emergência'} %}
+    <div class="page">
+        <a class="back" href="/sair">← Voltar</a>
+        <header class="page__header">
+            <h1 class="page__title">Abertura de turno</h1>
+            <p class="page__subtitle">Verifique o que foi deixado no último turno</p>
         </header>
-
-        <main class="app_content">
-            <section class="shift_section">
-                <h2 class="shift_title">Turno previsto</h2>
-                <div class="card">
-                    <p><strong>Turno {{ cuidador.turno_padrao }}</strong></p>
-                    <p>Unidade Central • {{ total_residentes }} residentes</p>
-                    <p>Cuidador: {{ cuidador.nome }}</p>
-                </div>
+        <main>
+            <section class="shift">
+                <p class="shift__label">Turno previsto</p>
+                <p class="shift__time">{{ cuidador.turno_padrao }} · {{ horarios[cuidador.turno_padrao] }}</p>
+                <p class="shift__unit">Unidade Central · {{ total_residentes }} residentes</p>
             </section>
 
-            <section class="shift_section">
-                <h2 class="shift_title">
-                    {% if ultimo_turno %}
-                    Turno {{ ultimo_turno.cuidador_nome }}
+            <h2 class="page__section-title">Passagem de plantão anterior</h2>
+            {% if ultimo_turno %}
+            <p class="shift__from">Turno anterior · {{ ultimo_turno.cuidador_nome }}</p>
+
+            <ul class="list">
+                {% for a in alertas %}
+                <li class="list__item">
+                    {% if a.fora_da_faixa == 1 %}
+                    <span class="badge badge--alert">Alerta</span>
+                    <p class="list__text">{{ a.tipo_nome }} fora da faixa ({{ a.valor|numero }} {{ a.unidade }}) — {{ a.residente_nome }}</p>
                     {% else %}
-                    Turno anterior
+                    <span class="badge badge--warning">Não realizado</span>
+                    <p class="list__text">{{ a.tipo_nome }} — {{ a.residente_nome }} · {{ motivos.get(a.motivo, a.motivo) }}</p>
                     {% endif %}
-                </h2>
-
-                {% if not ultimo_turno %}
-                <div class="card">
-                    <p>Este é o primeiro turno registrado.</p>
-                </div>
-                {% else %}
-                <ul class="list">
-                    {% for a in alertas %}
-                    <li class="list_item">
-                        {% if a.fora_da_faixa == 1 %}
-                        <span class="badge badge--alert">Alerta</span>
-                        <div class="list_content">
-                            <p class="list_title">{{ a.tipo_nome }} fora da faixa ({{ a.valor|numero }} {{ a.unidade }})</p>
-                            <p class="list_subtitle">{{ a.residente_nome }}</p>
-                        </div>
-                        {% else %}
-                        <span class="badge badge--warning">Não realizado</span>
-                        <div class="list_content">
-                            <p class="list_title">{{ a.tipo_nome }} {{ a.residente_nome }}</p>
-                            <p class="list_subtitle">Motivo: {{ a.motivo }}</p>
-                        </div>
-                        {% endif %}
-                    </li>
-                    {% endfor %}
-
-                    {% for p in pendencias %}
-                    <li class="list_item">
-                        <span class="badge badge--warning">Pendente</span>
-                        <div class="list_content">
-                            <p class="list_title">{{ p }}</p>
-                        </div>
-                    </li>
-                    {% endfor %}
-
-                    {% if ultimo_turno.passagem %}
-                    <li class="list_item">
-                        <span class="badge badge--done">Recado</span>
-                        <div class="list_content">
-                            <p class="list_title">{{ ultimo_turno.passagem }}</p>
-                        </div>
-                    </li>
-                    {% endif %}
-                </ul>
+                </li>
+                {% endfor %}
+                {% for p in pendencias %}
+                <li class="list__item">
+                    <span class="badge badge--warning">Pendente</span>
+                    <p class="list__text">{{ p }}</p>
+                </li>
+                {% endfor %}
+                {% if ultimo_turno.passagem %}
+                <li class="list__item">
+                    <span class="badge badge--done">Recado</span>
+                    <p class="list__text">{{ ultimo_turno.passagem }}</p>
+                </li>
                 {% endif %}
-            </section>
+                {% if not alertas and not pendencias and not ultimo_turno.passagem %}
+                <li class="list__item">
+                    <p class="list__text">O turno anterior não deixou alertas nem pendências.</p>
+                </li>
+                {% endif %}
+            </ul>
+            {% else %}
+            <p class="shift__from">Este é o primeiro turno registrado.</p>
+            {% endif %}
 
-            <form method="post" style="margin-top: 24px;">
-                <button type="submit" class="button button--primary button--block">Abrir turno</button>
+            <form method="post">
+                <button class="button button--primary button--block" type="submit">Abrir turno</button>
             </form>
+            <p class="shift__note">Ao abrir o turno, você assume a responsabilidade pelos registros.</p>
         </main>
     </div>
 </body>
+
 </html>

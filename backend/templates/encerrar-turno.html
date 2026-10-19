@@ -1,71 +1,63 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geratrix - Encerrar Turno</title>
-    <link rel="stylesheet" href="/css/base/reset.css">
-    <link rel="stylesheet" href="/css/base/variables.css">
-    <link rel="stylesheet" href="/css/base/typography.css">
-    <link rel="stylesheet" href="/css/layout/app.css">
-    <link rel="stylesheet" href="/css/components/card.css">
-    <link rel="stylesheet" href="/css/components/badge.css">
-    <link rel="stylesheet" href="/css/components/button.css">
+    <title>Geratrix</title>
+    <link rel="stylesheet" href="/css/base/style.css">
+    <link rel="stylesheet" href="/css/layout/page.css">
+    <link rel="stylesheet" href="/css/layout/back.css">
+    <link rel="stylesheet" href="/css/components/shift.css">
     <link rel="stylesheet" href="/css/components/list.css">
+    <link rel="stylesheet" href="/css/components/badge.css">
     <link rel="stylesheet" href="/css/components/form.css">
+    <link rel="stylesheet" href="/css/components/button.css">
 </head>
+
 <body>
-    <div class="app">
-        <header class="app_header">
-            <a href="/lista" class="button button--icon" style="text-decoration: none;">←</a>
-            <h1 class="app_title" style="margin-top: 12px;">Encerramento de turno</h1>
-            <p class="app_subtitle">Confira as pendências e deixe um recado para a equipe</p>
+    {% set horarios = {'Manhã': '07:00 – 13:00', 'Tarde': '13:00 – 19:00', 'Noite': '19:00 – 07:00'} %}
+    <div class="page">
+        <a class="back" href="/lista">← Voltar</a>
+
+        <header class="page__header">
+            <h1 class="page__title">Encerrar Turno</h1>
+            <p class="page__subtitle">Resumo e passagem de plantão</p>
         </header>
 
-        <main class="app_content">
-            <section style="margin-bottom: 20px;">
-                <h2 style="font-size: 16px; margin-bottom: 8px;">Turno atual</h2>
-                <div class="card">
-                    <p style="margin: 0 0 4px 0;"><strong>Turno {{ cuidador.turno_padrao }} • {{ hora_atual }}</strong></p>
-                    <p style="margin: 0 0 4px 0;">Unidade Central</p>
-                    <p style="margin: 0;">Cuidador: {{ cuidador.nome }}</p>
-                </div>
-            </section>
+        <main>
+            <div class="shift">
+                <p class="shift__label">Turno {{ cuidador.turno_padrao }}</p>
+                <p class="shift__time">{{ horarios[cuidador.turno_padrao] }}</p>
+                <p class="shift__unit">Unidade Central · Cuidador: {{ cuidador.nome }}</p>
+            </div>
 
-            <section style="margin-bottom: 20px;">
-                <h2 style="font-size: 16px; margin-bottom: 8px;">Pendências do turno</h2>
-                {% if pendentes %}
-                <ul class="list">
-                    {% for p in pendentes %}
-                    <li class="list_item" style="border-bottom: 1px solid #eee; padding: 8px 0;">
-                        <a href="/checkin/{{ p.id }}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 12px; width: 100%;">
-                            {% if p.status_calculado == 'atrasado' %}
-                            <span class="badge badge--alert">Atrasado</span>
-                            {% else %}
-                            <span class="badge badge--warning">Pendente</span>
-                            {% endif %}
-                            <div class="list_content">
-                                <p class="list_title" style="font-weight: bold; margin: 0;">{{ p.tipo }}</p>
-                                <p class="list_subtitle" style="margin: 0; color: #666;">{{ p.residente }} ({{ p.horario }})</p>
-                            </div>
-                        </a>
-                    </li>
-                    {% endfor %}
-                </ul>
+            <h2 class="page__section-title">Pendências do Turno</h2>
+            <div class="list">
+                {% for p in pendentes %}
+                <div class="list__item">
+                    <a class="list__text list__text--link" href="/checkin/{{ p.id }}">
+                        <span><strong>{{ p.tipo }}</strong><br><small>Residente: {{ p.residente }} · {{ p.horario }}</small></span>
+                    </a>
+                    <span class="badge {% if p.status_calculado == 'atrasado' %}badge--alert{% else %}badge--warning{% endif %}">{{ p.status_calculado|capitalize }}</span>
+                </div>
                 {% else %}
-                <p style="color: #2e7d32; font-weight: 500;">Nenhuma pendência. Tudo registrado.</p>
-                {% endif %}
-            </section>
+                <div class="list__item"><p class="list__text">Nenhuma pendência. Tudo registrado.</p></div>
+                {% endfor %}
+            </div>
 
             <form class="form" method="post">
-                <div style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px;">
-                    <label for="passagem" style="font-weight: 500; font-size: 14px;">Passagem de plantão (recado para o próximo turno)</label>
-                    <textarea id="passagem" name="passagem" rows="3" placeholder="Digite aqui o recado..." style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; resize: vertical;"></textarea>
+                <div class="form__group">
+                    <label class="form__label" for="passagem">Passagem de Plantão / Observações</label>
+                    <textarea class="form__input form__textarea" id="passagem" name="passagem" rows="4" placeholder="Descreva as ocorrências relevantes do plantão..."></textarea>
                 </div>
 
-                <button type="submit" class="button button--primary button--block">Encerrar e sair</button>
+                <div class="form__actions">
+                    <button class="button button--primary button--block" type="submit">Encerrar Turno</button>
+                </div>
             </form>
         </main>
     </div>
 </body>
+
 </html>

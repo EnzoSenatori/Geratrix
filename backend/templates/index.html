@@ -1,36 +1,41 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geratrix - Início</title>
-    <link rel="stylesheet" href="/css/base/reset.css">
-    <link rel="stylesheet" href="/css/base/variables.css">
-    <link rel="stylesheet" href="/css/base/typography.css">
-    <link rel="stylesheet" href="/css/layout/app.css">
-    <link rel="stylesheet" href="/css/components/card.css">
+    <title>Geratrix</title>
+    <link rel="stylesheet" href="/css/base/style.css">
+    <link rel="stylesheet" href="/css/layout/page.css">
     <link rel="stylesheet" href="/css/components/avatar.css">
+    <link rel="stylesheet" href="/css/components/card.css">
+    <link rel="stylesheet" href="/css/components/user-list.css">
 </head>
+
 <body>
-    <div class="app">
-        <header class="app_header">
-            <h1 class="app_title">Geratrix</h1>
-            <p class="app_subtitle">Escolha seu perfil para entrar</p>
+    <div class="page page--no-back">
+        <header class="page__header">
+            <h1 class="page__title">Geratrix</h1>
+            <p class="page__subtitle">Gestão de cuidado em ILPI</p>
         </header>
 
-        <main class="app_content">
-            <div class="cards_grid">
+        <main>
+            <h2 class="page__section-title">Quem está abrindo o turno?</h2>
+            <ul class="user-list">
                 {% for c in cuidadores %}
-                <a href="/pin/{{ c.id }}" class="card card--interactive">
-                    <div class="avatar">{{ c.iniciais }}</div>
-                    <div class="card_info">
-                        <h2 class="card_title">{{ c.nome }}</h2>
-                        <p class="card_subtitle">Cuidador • Turno {{ c.turno_padrao }}</p>
-                    </div>
-                </a>
+                <li class="user-list__item">
+                    <a class="card" href="/pin/{{ c.id }}">
+                        <div class="avatar">{{ c.iniciais }}</div>
+                        <div class="card__info">
+                            <h3 class="card__title">{{ c.nome }}</h3>
+                            <p class="card__text">Cuidador - Turno {{ c.turno_padrao }}</p>
+                        </div>
+                    </a>
+                </li>
                 {% endfor %}
-            </div>
+            </ul>
         </main>
     </div>
 </body>
+
 </html>

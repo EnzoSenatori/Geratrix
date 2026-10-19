@@ -59,7 +59,7 @@ def semear():
     ontem_19h = ontem.replace(hour=19, minute=0, second=0).strftime("%Y-%m-%d %H:%M:%S")
     hoje_07h = agora.replace(hour=7, minute=0, second=0).strftime("%Y-%m-%d %H:%M:%S")
     
-    turno = (1, 3, ontem_19h, hoje_07h, "Dona Maria acordou duas vezes durante a noite. Sr. José recusou o lanche das 22h.", "Troca de fraldas Terezinha Lima (05:00)")
+    turno = (1, 3, ontem_19h, hoje_07h, "Dona Maria acordou duas vezes durante a noite. Sr. José recusou o lanche das 22h.", "Troca de fraldas -  Terezinha Lima (05:00)")
     cursor.execute("INSERT INTO turno (id, cuidador_id, aberto_em, encerrado_em, passagem, pendencias) VALUES (?, ?, ?, ?, ?, ?)", turno)
 
     ontem_22h10 = ontem.replace(hour=22, minute=10, second=0).strftime("%Y-%m-%d %H:%M:%S")
