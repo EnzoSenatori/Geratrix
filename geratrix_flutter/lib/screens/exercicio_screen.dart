@@ -94,7 +94,7 @@ class _ExercicioScreenState extends State<ExercicioScreen> {
             valor,
             style: textos.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
           ),
-          Text(rotulo, style: textos.bodySmall),
+          Text(rotulo, style: textos.bodySmall, textAlign: TextAlign.center),
         ],
       ),
     );
@@ -137,6 +137,7 @@ class _ExercicioScreenState extends State<ExercicioScreen> {
                 child: Column(
                   children: [
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start, // números na mesma altura, mesmo com rótulo de duas linhas
                       children: [
                         _montarNumero('$_series', 'séries'),
                         _montarNumero('$_reps', 'repetições'),
