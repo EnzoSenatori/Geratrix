@@ -1,3 +1,4 @@
+// Prescrição do exercício que o app envia à caneleira pelo tópico cmd
 class Prescricao {
   final String sid; // identificador anônimo da sessão, sem "/" nem "+"
   final int series;
