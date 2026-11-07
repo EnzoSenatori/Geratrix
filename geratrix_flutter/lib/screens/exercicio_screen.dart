@@ -107,9 +107,10 @@ class _ExercicioScreenState extends State<ExercicioScreen> {
     final tituloSecao = textos.titleLarge?.copyWith(fontWeight: FontWeight.w700);
     final sessaoAtual = _sessoes[_sidAtual];
     final enviadaEm = _enviadaEm;
-    final podeEnviar = _conectado &&
-        _estado.online &&
-        (_sidAtual == null || sessaoAtual?.concluida == true);
+    // Prescrição enviada sem resposta, ou alguma sessão recebida que ainda não terminou
+    final emAndamento = (_sidAtual != null && sessaoAtual == null) ||
+        _sessoes.values.any((sessao) => !sessao.concluida);
+    final podeEnviar = _conectado && _estado.online && !emAndamento;
 
     return Scaffold(
       body: SafeArea(
