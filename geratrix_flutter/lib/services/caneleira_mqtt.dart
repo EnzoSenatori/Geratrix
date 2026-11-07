@@ -30,7 +30,7 @@ class CaneleiraMqtt {
   final void Function(SessaoExercicio sessao) onSessao;
 
   late final MqttBrowserClient _cliente;
-  Prescricao? _pendente; // enviada, mas ainda não confirmada pela caneleira
+  Prescricao? _pendente; // enviada, até chegar o primeiro resumo da sessão
 
   CaneleiraMqtt({
     required this.onConexao,
@@ -65,7 +65,7 @@ class CaneleiraMqtt {
     _cliente.updates!.listen(_tratarMensagens);
   }
 
-  // Envia a prescrição pelo tópico cmd e a guarda até a caneleira confirmar
+  // Envia a prescrição pelo tópico cmd e a guarda até chegar o primeiro resumo
   void enviarPrescricao(Prescricao prescricao) {
     _pendente = prescricao;
     _publicar(_topicoCmd, prescricao.toJson());
@@ -93,7 +93,11 @@ class CaneleiraMqtt {
         final json = jsonDecode(texto) as Map<String, dynamic>;
         if (mensagem.topic == _topicoEstado) {
           final estado = EstadoCaneleira.fromJson(json);
-          if (estado.sid == _pendente?.sid) _pendente = null; // a caneleira aceitou
+          final pendente = _pendente;
+          // A caneleira está ligada sem a sessão (reiniciou antes do 1º resumo): reenvia com o mesmo sid
+          if (pendente != null && estado.online && estado.sid != pendente.sid) {
+            _publicar(_topicoCmd, pendente.toJson());
+          }
           onEstado(estado);
         } else if (mensagem.topic.startsWith(_prefixoSessao)) {
           final sessao = SessaoExercicio.fromJson(json);
@@ -106,7 +110,7 @@ class CaneleiraMqtt {
     }
   }
 
-  // Depois de uma queda, reenvia a prescrição que a caneleira ainda não confirmou
+  // Depois de uma queda do app, reenvia a prescrição que ainda não teve resumo
   void _aoReconectar() {
     onConexao(true);
     final pendente = _pendente;
