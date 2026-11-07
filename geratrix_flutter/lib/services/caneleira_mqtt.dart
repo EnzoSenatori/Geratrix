@@ -78,6 +78,7 @@ class CaneleiraMqtt {
 
   // Encerra a conexão com o broker; a tela chama no dispose()
   void desconectar() {
+    _cliente.onDisconnected = null; // a tela está fechando: não precisa mais ser avisada
     _cliente.disconnect();
   }
 
