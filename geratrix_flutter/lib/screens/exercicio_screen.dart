@@ -100,6 +100,36 @@ class _ExercicioScreenState extends State<ExercicioScreen> {
     );
   }
 
+  // Monta o título de uma seção de séries, com o status da sessão num chip à direita
+  Widget _montarTituloSessao(String titulo, SessaoExercicio? sessao) {
+    final cores = Theme.of(context).colorScheme;
+    final textos = Theme.of(context).textTheme;
+    final concluida = sessao?.concluida == true;
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            titulo,
+            style: textos.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+          ),
+        ),
+        Chip(
+          label: Text(sessao?.statusTexto ?? 'Aguardando'), // nulo: enviada, sem resumo ainda
+          labelStyle: textos.labelMedium?.copyWith(
+            color: concluida ? cores.onPrimaryContainer : cores.onSurfaceVariant,
+            fontWeight: FontWeight.w600,
+          ),
+          backgroundColor: concluida
+              ? cores.primaryContainer
+              : cores.surfaceContainerHighest,
+          side: BorderSide.none,
+          shape: const StadiumBorder(),
+          visualDensity: VisualDensity.compact,
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cores = Theme.of(context).colorScheme;
@@ -165,7 +195,7 @@ class _ExercicioScreenState extends State<ExercicioScreen> {
             ),
             if (_sidAtual != null) ...[
               const SizedBox(height: 24),
-              Text('Séries', style: tituloSecao),
+              _montarTituloSessao('Séries', sessaoAtual),
               const SizedBox(height: 12),
               Card(
                 child: Column(
@@ -183,7 +213,7 @@ class _ExercicioScreenState extends State<ExercicioScreen> {
             for (final sessao in _sessoes.values)
               if (sessao.sid != _sidAtual) ...[
                 const SizedBox(height: 24),
-                Text('Sessão iniciada sem o app', style: tituloSecao),
+                _montarTituloSessao('Sessão recuperada', sessao),
                 const SizedBox(height: 12),
                 Card(
                   child: Column(
