@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'routes.dart';
+import 'screens/abrir_turno_screen.dart';
 import 'screens/gestor_screen.dart';
 import 'screens/index_screen.dart';
 import 'screens/pin_screen.dart';
@@ -52,6 +53,8 @@ class GeratrixApp extends StatelessWidget {
         AppRoutes.index: (context) => const IndexScreen(),
         AppRoutes.pin: (context) => const PinScreen(),
         AppRoutes.gestor: (context) => const GestorScreen(),
+        // NOVO: Registra a rota da tela de Abertura de Turno
+        AppRoutes.abrirTurno: (context) => const AbrirTurnoScreen(),
       },
     );
   }
