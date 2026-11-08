@@ -140,8 +140,12 @@ class _ListaScreenState extends State<ListaScreen> {
                     subtitle: Text('${item.horario} • ${item.residente}'),
                     trailing: isFeito ? null : const Icon(Icons.chevron_right_rounded),
                     onTap: isFeito ? null : () {
-                      // NOVO: Navega para a rota de check-in enviando a tarefa na bagagem!
-                      Navigator.pushNamed(context, AppRoutes.checkin, arguments: item);
+                      // Direciona para a tela específica dependendo do tipo de tarefa
+                      if (item.tipo.contains('Medição') || item.tipo.contains('Pressão')) {
+                        Navigator.pushNamed(context, AppRoutes.checkinSinaisVitais, arguments: item);
+                      } else {
+                        Navigator.pushNamed(context, AppRoutes.checkin, arguments: item);
+                      }
                     },
                   ),
                 );
