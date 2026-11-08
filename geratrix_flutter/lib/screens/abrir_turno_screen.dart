@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/cuidador.dart';
+import '../routes.dart';
 
 // Tela de Abertura de Turno: exibe o resumo do plantão anterior, alertas e pendências
 class AbrirTurnoScreen extends StatelessWidget {
@@ -172,11 +173,14 @@ class AbrirTurnoScreen extends StatelessWidget {
             const SizedBox(height: 32),
 
             // Botão de Iniciar
+            // Botão de Iniciar
             FilledButton(
               onPressed: () {
-                // Provisório: Aviso até a tela de Lista existir
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Lista de tarefas em construção')),
+                // Substitui a tela de abertura pela lista de tarefas
+                Navigator.pushReplacementNamed(
+                  context, 
+                  AppRoutes.lista, 
+                  arguments: cuidador,
                 );
               },
               child: const Text('Iniciar plantão'),
