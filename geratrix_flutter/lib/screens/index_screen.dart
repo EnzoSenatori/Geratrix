@@ -30,12 +30,6 @@ const _cuidadores = [
 class IndexScreen extends StatelessWidget {
   const IndexScreen({super.key});
 
-  void _avisarEmConstrucao(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Tela em construção')),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final cores = Theme.of(context).colorScheme;
@@ -78,7 +72,7 @@ class IndexScreen extends StatelessWidget {
                 titulo: cuidador.nome,
                 subtitulo: 'Cuidador · Turno ${cuidador.turnoPadrao}',
                 onTap: () {
-                  // NOVO: Navega para o PIN passando o cuidador como argumento
+                  // Navega para o PIN passando o cuidador como argumento
                   Navigator.pushNamed(context, AppRoutes.pin, arguments: cuidador);
                 },
               ),
@@ -92,7 +86,10 @@ class IndexScreen extends StatelessWidget {
               titulo: 'Gestor — Direção',
               subtitulo: 'Acesso gerencial',
               destaque: true,
-              onTap: () => _avisarEmConstrucao(context),
+              onTap: () {
+                // Navega para a rota do gestor
+                Navigator.pushNamed(context, AppRoutes.gestor);
+              },
             ),
           ],
         ),
