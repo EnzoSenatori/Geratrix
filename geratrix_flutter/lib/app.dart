@@ -2,18 +2,19 @@ import 'package:flutter/material.dart';
 
 import 'routes.dart';
 import 'screens/abrir_turno_screen.dart';
-import 'screens/gestor_screen.dart';
-import 'screens/index_screen.dart';
-import 'screens/pin_screen.dart';
-import 'theme/app_colors.dart';
-import 'screens/lista_screen.dart';
-import 'screens/checkin_tarefa_screen.dart';
-import 'screens/nao_realizado_screen.dart';
-import 'screens/checkin_sinais_vitais_screen.dart';
 import 'screens/checkin_medicamento_screen.dart';
-import 'screens/residente_screen.dart';
+import 'screens/checkin_sinais_vitais_screen.dart';
+import 'screens/checkin_tarefa_screen.dart';
 import 'screens/encerrar_turno_screen.dart';
+import 'screens/erro_screen.dart';
+import 'screens/gestor_screen.dart';
 import 'screens/historico_turnos_screen.dart';
+import 'screens/index_screen.dart';
+import 'screens/lista_screen.dart';
+import 'screens/nao_realizado_screen.dart';
+import 'screens/pin_screen.dart';
+import 'screens/residente_screen.dart';
+import 'theme/app_colors.dart';
 
 // Raiz do app: tema do guia visual e rotas
 class GeratrixApp extends StatelessWidget {
@@ -64,12 +65,18 @@ class GeratrixApp extends StatelessWidget {
         AppRoutes.abrirTurno: (context) => const AbrirTurnoScreen(),
         AppRoutes.lista: (context) => const ListaScreen(),
         AppRoutes.checkin: (context) => const CheckinTarefaScreen(),
-        AppRoutes.naoRealizado: (context) => const NaoRealizadoScreen(),
         AppRoutes.checkinSinaisVitais: (context) => const CheckinSinaisVitaisScreen(),
         AppRoutes.checkinMedicamento: (context) => const CheckinMedicamentoScreen(),
+        AppRoutes.naoRealizado: (context) => const NaoRealizadoScreen(),
         AppRoutes.residente: (context) => const ResidenteScreen(),
         AppRoutes.encerrarTurno: (context) => const EncerrarTurnoScreen(),
         AppRoutes.historicoTurnos: (context) => const HistoricoTurnosScreen(),
+      },
+      // Tratamento de rotas desconhecidas (404)
+      onUnknownRoute: (settings) {
+        return MaterialPageRoute(
+          builder: (context) => const ErroScreen(),
+        );
       },
     );
   }
