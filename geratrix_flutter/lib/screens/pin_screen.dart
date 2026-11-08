@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../models/cuidador.dart';
+import '../routes.dart';
 
 // Tela de inserção do código PIN para login
 class PinScreen extends StatefulWidget {
@@ -37,11 +38,14 @@ class _PinScreenState extends State<PinScreen> {
     }
   }
 
-  // Valida o PIN e prossegue
+  // Valida o PIN e prossegue para a abertura de turno
   void _entrar(Cuidador cuidador) {
     if (_pinAtual == cuidador.pin) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bem-vindo! Abertura de turno em construção.')),
+      // Substitui a tela de PIN pela tela de Abertura de Turno
+      Navigator.pushReplacementNamed(
+        context,
+        AppRoutes.abrirTurno,
+        arguments: cuidador,
       );
     } else {
       setState(() {
@@ -103,113 +107,108 @@ class _PinScreenState extends State<PinScreen> {
         ),
       ),
       body: SafeArea(
-        child: Padding(
+        child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Login',
-                style: textos.titleLarge?.copyWith(fontWeight: FontWeight.w800, fontSize: 28, letterSpacing: -0.5),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Insira seu código de acesso',
-                style: textos.bodyLarge?.copyWith(color: cores.onSurfaceVariant),
-              ),
-              const SizedBox(height: 32),
-              
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: cores.primaryContainer,
-                    foregroundColor: cores.onPrimaryContainer,
-                    child: Text(
-                      cuidador.iniciais,
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                    ),
+          children: [
+            Text(
+              'Login',
+              style: textos.titleLarge?.copyWith(fontWeight: FontWeight.w800, fontSize: 28, letterSpacing: -0.5),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Insira seu código de acesso',
+              style: textos.bodyLarge?.copyWith(color: cores.onSurfaceVariant),
+            ),
+            const SizedBox(height: 32),
+            
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: cores.primaryContainer,
+                  foregroundColor: cores.onPrimaryContainer,
+                  child: Text(
+                    cuidador.iniciais,
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(width: 12),
-                  Text(
-                    cuidador.nome,
-                    style: textos.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              
-              const SizedBox(height: 32),
-              Text(
-                'PIN',
-                textAlign: TextAlign.center,
-                style: textos.labelMedium?.copyWith(color: cores.onSurfaceVariant, fontWeight: FontWeight.w600, letterSpacing: 0.8),
-              ),
-              const SizedBox(height: 16),
-              
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  for (int i = 0; i < 4; i++) ...[
-                    _buildBolinha(i < _pinAtual.length, cores),
-                    if (i < 3) const SizedBox(width: 16),
-                  ],
-                ],
-              ),
-              if (_erro != null) ...[
-                const SizedBox(height: 16),
-                Text(_erro!, textAlign: TextAlign.center, style: TextStyle(color: cores.error, fontWeight: FontWeight.w500)),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  cuidador.nome,
+                  style: textos.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                ),
               ],
-              
-              const Spacer(), // Empurra o teclado para o rodapé
-              
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildTecla('1', onTap: () => _digitar('1'), cores: cores),
-                  _buildTecla('2', onTap: () => _digitar('2'), cores: cores),
-                  _buildTecla('3', onTap: () => _digitar('3'), cores: cores),
+            ),
+            
+            const SizedBox(height: 32),
+            Text(
+              'PIN',
+              textAlign: TextAlign.center,
+              style: textos.labelMedium?.copyWith(color: cores.onSurfaceVariant, fontWeight: FontWeight.w600, letterSpacing: 0.8),
+            ),
+            const SizedBox(height: 16),
+            
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                for (int i = 0; i < 4; i++) ...[
+                  _buildBolinha(i < _pinAtual.length, cores),
+                  if (i < 3) const SizedBox(width: 16),
                 ],
-              ),
+              ],
+            ),
+            if (_erro != null) ...[
               const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildTecla('4', onTap: () => _digitar('4'), cores: cores),
-                  _buildTecla('5', onTap: () => _digitar('5'), cores: cores),
-                  _buildTecla('6', onTap: () => _digitar('6'), cores: cores),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildTecla('7', onTap: () => _digitar('7'), cores: cores),
-                  _buildTecla('8', onTap: () => _digitar('8'), cores: cores),
-                  _buildTecla('9', onTap: () => _digitar('9'), cores: cores),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildTecla('', cores: cores),
-                  _buildTecla('0', onTap: () => _digitar('0'), cores: cores),
-                  _buildTecla('', icone: Icons.backspace_outlined, onTap: _apagar, cores: cores),
-                ],
-              ),
-              
-              const SizedBox(height: 32),
-              
-              // O botão de entrar
-              FilledButton(
-                // Se o PIN não tiver 4 dígitos, passamos null (o botão desabilita sozinho)
-                onPressed: _pinAtual.length == 4 ? () => _entrar(cuidador) : null,
-                child: const Text('Entrar'),
-              ),
-              const SizedBox(height: 24),
+              Text(_erro!, textAlign: TextAlign.center, style: TextStyle(color: cores.error, fontWeight: FontWeight.w500)),
             ],
-          ),
+            
+            const SizedBox(height: 32),
+            
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildTecla('1', onTap: () => _digitar('1'), cores: cores),
+                _buildTecla('2', onTap: () => _digitar('2'), cores: cores),
+                _buildTecla('3', onTap: () => _digitar('3'), cores: cores),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildTecla('4', onTap: () => _digitar('4'), cores: cores),
+                _buildTecla('5', onTap: () => _digitar('5'), cores: cores),
+                _buildTecla('6', onTap: () => _digitar('6'), cores: cores),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildTecla('7', onTap: () => _digitar('7'), cores: cores),
+                _buildTecla('8', onTap: () => _digitar('8'), cores: cores),
+                _buildTecla('9', onTap: () => _digitar('9'), cores: cores),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildTecla('', cores: cores),
+                _buildTecla('0', onTap: () => _digitar('0'), cores: cores),
+                _buildTecla('', icone: Icons.backspace_outlined, onTap: _apagar, cores: cores),
+              ],
+            ),
+            
+            const SizedBox(height: 32),
+            
+            FilledButton(
+              onPressed: _pinAtual.length == 4 ? () => _entrar(cuidador) : null,
+              child: const Text('Entrar'),
+            ),
+            const SizedBox(height: 24),
+          ],
         ),
       ),
     );
