@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/cuidador.dart';
+import '../routes.dart';
 
 // Lista de cuidadores (incluindo uma inativa para exemplo visual)
 const _cuidadores = [
@@ -10,7 +11,7 @@ const _cuidadores = [
   Cuidador(nome: 'Maria da Silva', iniciais: 'MS', turnoPadrao: 'Folga', pin: '0000', ativo: false),
 ];
 
-// Painel do Gestor: visualização do status da equipe
+// Painel do Gestor: visualização do status da equipe e acesso a relatórios
 class GestorScreen extends StatelessWidget {
   const GestorScreen({super.key});
 
@@ -41,6 +42,18 @@ class GestorScreen extends StatelessWidget {
                 ),
               ),
             ),
+            // Botão para navegar até o histórico de turnos e relatórios gerenciais
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.pushNamed(context, AppRoutes.historicoTurnos);
+                },
+                icon: const Icon(Icons.assessment_outlined),
+                label: const Text('Ver histórico de turnos e relatórios'),
+              ),
+            ),
+            const SizedBox(height: 16),
             // Expanded faz a lista ocupar todo o espaço restante da tela
             Expanded(
               child: ListView.separated(
