@@ -5,4 +5,5 @@ class AppRoutes {
   static const String index = "/";
   static const String pin = "/pin";
   static const String gestor = "/gestor";
+  static const String abrirTurno = "/abrir-turno";
 }
