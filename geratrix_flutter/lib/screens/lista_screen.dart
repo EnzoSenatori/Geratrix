@@ -1,18 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../models/item_rotina.dart';
 import '../routes.dart';
 
-// Modelo temporário (depois irá para um arquivo próprio e puxará do banco/API)
-class ItemRotina {
-  final String id;
-  final String horario;
-  final String tipo;
-  final String residente;
-  final String status; // 'atrasado', 'pendente', 'feito'
-
-  const ItemRotina(this.id, this.horario, this.tipo, this.residente, this.status);
-}
-
+// Dados provisórios
 const _itensMock = [
   ItemRotina('1', '08:00', 'Medicação', 'Dona Carmem', 'feito'),
   ItemRotina('2', '09:40', 'Pressão Arterial', 'Sr. João', 'atrasado'),
@@ -48,7 +39,7 @@ class _ListaScreenState extends State<ListaScreen> {
       ),
       shape: const StadiumBorder(),
       side: BorderSide.none,
-      showCheckmark: false, // Guia visual não usa checkmark nos chips
+      showCheckmark: false,
     );
   }
 
@@ -56,8 +47,6 @@ class _ListaScreenState extends State<ListaScreen> {
   Widget build(BuildContext context) {
     final cores = Theme.of(context).colorScheme;
     final textos = Theme.of(context).textTheme;
-    // Opcional: receber o cuidador (ainda não o usamos visualmente aqui, mas mantemos o fluxo)
-    // final cuidador = ModalRoute.of(context)!.settings.arguments as Cuidador;
 
     // Lógica do app.py: cálculo de progresso e filtragem
     final total = _itensMock.length;
@@ -67,12 +56,12 @@ class _ListaScreenState extends State<ListaScreen> {
     final itensFiltrados = _itensMock.where((item) {
       if (_filtroAtual == 'Todos') return true;
       if (_filtroAtual == 'Feitos') return item.status == 'feito';
-      return item.status != 'feito'; // "A Fazer"
+      return item.status != 'feito'; 
     }).toList();
 
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false, // Oculta a seta de voltar (estamos "presos" no plantão)
+        automaticallyImplyLeading: false, 
         title: Text(
           'Lista do agora',
           style: textos.titleLarge?.copyWith(fontWeight: FontWeight.w800),
@@ -117,9 +106,9 @@ class _ListaScreenState extends State<ListaScreen> {
           // Lista de Cards
           Expanded(
             child: ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 96), // 96 de espaço inferior para o FAB não cobrir texto
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 96), 
               itemCount: itensFiltrados.length,
-              separatorBuilder: (context,index) => const SizedBox(height: 12),
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final item = itensFiltrados[index];
                 final isAtrasado = item.status == 'atrasado';
@@ -144,16 +133,15 @@ class _ListaScreenState extends State<ListaScreen> {
                       item.tipo,
                       style: textos.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        decoration: isFeito ? TextDecoration.lineThrough : null, // Risca se estiver feito
+                        decoration: isFeito ? TextDecoration.lineThrough : null, 
                         color: isFeito ? cores.onSurfaceVariant : cores.onSurface,
                       ),
                     ),
                     subtitle: Text('${item.horario} • ${item.residente}'),
                     trailing: isFeito ? null : const Icon(Icons.chevron_right_rounded),
                     onTap: isFeito ? null : () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Tela de Check-in em construção')),
-                      );
+                      // NOVO: Navega para a rota de check-in enviando a tarefa na bagagem!
+                      Navigator.pushNamed(context, AppRoutes.checkin, arguments: item);
                     },
                   ),
                 );
