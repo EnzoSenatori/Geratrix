@@ -12,4 +12,5 @@ class AppRoutes {
   static const String checkinMedicamento = "/checkin-medicamento";
   static const String naoRealizado = "/nao-realizado";
   static const String residente = "/residente";
+  static const String encerrarTurno = "/encerrar-turno"; // NOVO: Rota de encerramento de turno
 }

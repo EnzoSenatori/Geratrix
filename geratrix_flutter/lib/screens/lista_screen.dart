@@ -156,14 +156,14 @@ class _ListaScreenState extends State<ListaScreen> {
           ),
         ],
       ),
-      // FAB para ações rápidas (ex: encerrar turno)
-      floatingActionButton: FloatingActionButton(
+      // FAB para encerramento de plantão
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Tela Encerrar Turno em construção')),
-          );
+          // Navega para a tela de encerramento de turno
+          Navigator.pushNamed(context, AppRoutes.encerrarTurno);
         },
-        child: const Icon(Icons.stop_rounded),
+        icon: const Icon(Icons.stop_rounded),
+        label: const Text('Encerrar turno'),
       ),
     );
   }

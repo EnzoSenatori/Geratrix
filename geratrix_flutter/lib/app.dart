@@ -12,6 +12,7 @@ import 'screens/nao_realizado_screen.dart';
 import 'screens/checkin_sinais_vitais_screen.dart';
 import 'screens/checkin_medicamento_screen.dart';
 import 'screens/residente_screen.dart';
+import 'screens/encerrar_turno_screen.dart';
 
 // Raiz do app: tema do guia visual e rotas
 class GeratrixApp extends StatelessWidget {
@@ -66,6 +67,7 @@ class GeratrixApp extends StatelessWidget {
         AppRoutes.checkinSinaisVitais: (context) => const CheckinSinaisVitaisScreen(),
         AppRoutes.checkinMedicamento: (context) => const CheckinMedicamentoScreen(),
         AppRoutes.residente: (context) => const ResidenteScreen(),
+        AppRoutes.encerrarTurno: (context) => const EncerrarTurnoScreen(),
       },
     );
   }
