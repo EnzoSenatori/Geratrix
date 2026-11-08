@@ -143,6 +143,8 @@ class _ListaScreenState extends State<ListaScreen> {
                       // Direciona para a tela específica dependendo do tipo de tarefa
                       if (item.tipo.contains('Medição') || item.tipo.contains('Pressão')) {
                         Navigator.pushNamed(context, AppRoutes.checkinSinaisVitais, arguments: item);
+                      } else if (item.tipo.contains('Medicação') || item.tipo.contains('Remédio')) {
+                        Navigator.pushNamed(context, AppRoutes.checkinMedicamento, arguments: item);
                       } else {
                         Navigator.pushNamed(context, AppRoutes.checkin, arguments: item);
                       }
