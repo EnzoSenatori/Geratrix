@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'routes.dart';
 import 'screens/index_screen.dart';
+import 'screens/pin_screen.dart';
 import 'theme/app_colors.dart';
 
 // Raiz do app: tema do guia visual e rotas
@@ -48,6 +49,7 @@ class GeratrixApp extends StatelessWidget {
       initialRoute: AppRoutes.index,
       routes: {
         AppRoutes.index: (context) => const IndexScreen(),
+        AppRoutes.pin: (context) => const PinScreen(),
       },
     );
   }
