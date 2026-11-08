@@ -143,9 +143,10 @@ class _ExercicioScreenState extends State<ExercicioScreen> {
     final podeEnviar = _conectado && _estado.online && !emAndamento;
 
     return Scaffold(
+      appBar: AppBar(), // botão de voltar quando a tela abre pela lista do app
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
           children: [
             Text(
               'Registrar exercício',
