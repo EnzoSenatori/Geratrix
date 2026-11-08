@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/cuidador.dart';
+import '../routes.dart';
 import '../widgets/perfil_tile.dart';
 
 // Cuidadores do seed.py do backend, guardados em memória
@@ -29,7 +30,6 @@ const _cuidadores = [
 class IndexScreen extends StatelessWidget {
   const IndexScreen({super.key});
 
-  // Aviso provisório; a navegação entra junto com a próxima tela
   void _avisarEmConstrucao(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Tela em construção')),
@@ -77,7 +77,10 @@ class IndexScreen extends StatelessWidget {
                 iniciais: cuidador.iniciais,
                 titulo: cuidador.nome,
                 subtitulo: 'Cuidador · Turno ${cuidador.turnoPadrao}',
-                onTap: () => _avisarEmConstrucao(context),
+                onTap: () {
+                  // NOVO: Navega para o PIN passando o cuidador como argumento
+                  Navigator.pushNamed(context, AppRoutes.pin, arguments: cuidador);
+                },
               ),
               const SizedBox(height: 12),
             ],
