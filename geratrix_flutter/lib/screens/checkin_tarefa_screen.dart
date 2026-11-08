@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/item_rotina.dart';
+import '../routes.dart';
 
 // Tela de confirmação de uma tarefa comum da rotina (ex: Banho, Lanche)
 class CheckinTarefaScreen extends StatefulWidget {
@@ -33,8 +34,13 @@ class _CheckinTarefaScreenState extends State<CheckinTarefaScreen> {
 
   // Ação de apontar que a tarefa não foi realizada
   void _registrarNaoRealizado() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Tela de Não Realizado em construção')),
+    // Resgata o item da rota atual para repassar para a próxima tela
+    final item = ModalRoute.of(context)!.settings.arguments as ItemRotina;
+    
+    Navigator.pushNamed(
+      context, 
+      AppRoutes.naoRealizado, 
+      arguments: item,
     );
   }
 
