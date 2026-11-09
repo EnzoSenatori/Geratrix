@@ -23,6 +23,7 @@ class _ListaScreenState extends State<ListaScreen> {
     String rota = AppRoutes.checkin;
     if (item.natureza == 'medicao') rota = AppRoutes.checkinSinaisVitais;
     if (item.natureza == 'medicacao') rota = AppRoutes.checkinMedicamento;
+    if (item.natureza == 'exercicio') rota = AppRoutes.exercicio;
 
     final resultado = await Navigator.pushNamed(context, rota, arguments: item);
     if (!mounted || resultado is! String) return;
