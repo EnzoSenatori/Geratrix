@@ -103,7 +103,7 @@ class _CheckinTarefaScreenState extends State<CheckinTarefaScreen> {
                               style: textos.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                             ),
                             Text(
-                              item.residente,
+                              item.residente.nome,
                               style: textos.bodyMedium?.copyWith(color: cores.onSurfaceVariant),
                             ),
                             const SizedBox(height: 8),
