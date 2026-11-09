@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/residente.dart';
+import '../routes.dart';
 import 'erro_screen.dart';
 
 // Tela de Prontuário Rápido do Residente
@@ -202,6 +203,16 @@ class ResidenteScreen extends StatelessWidget {
                   ],
                 ),
               ),
+            ),
+            const SizedBox(height: 24),
+
+            // Botão para abrir o registro de exercício da caneleira
+            FilledButton.tonalIcon(
+              onPressed: () {
+                Navigator.pushNamed(context, AppRoutes.exercicio);
+              },
+              icon: const Icon(Icons.fitness_center_rounded),
+              label: const Text('Registrar exercício'),
             ),
           ],
         ),
