@@ -83,7 +83,23 @@ class _CheckinMedicamentoScreenState extends State<CheckinMedicamentoScreen> {
                     '${item.residente.nome} • Horário: ${item.horario}',
                     style: textos.bodyLarge?.copyWith(color: cores.onSurfaceVariant),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 8),
+                  // Botão de atalho para abrir o Prontuário Rápido do Residente
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: () {
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.residente,
+                          arguments: item.residente,
+                        );
+                      },
+                      icon: const Icon(Icons.badge_outlined, size: 20),
+                      label: const Text('Ver prontuário'),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
 
                   // Card de Detalhes da Prescrição
                   Card(
@@ -94,7 +110,7 @@ class _CheckinMedicamentoScreenState extends State<CheckinMedicamentoScreen> {
                         children: [
                           Row(
                             children: [
-                              Icon(Icons.medication_rounded, color: cores.primary, size: 24),
+                              Icon(Icons.medication_rounded, color: cores.secondary, size: 24),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
