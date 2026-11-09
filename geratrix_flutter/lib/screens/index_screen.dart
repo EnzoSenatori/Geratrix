@@ -1,97 +1,129 @@
 import 'package:flutter/material.dart';
 
-import '../models/cuidador.dart';
+import '../dados/dados_exemplo.dart';
 import '../routes.dart';
-import '../widgets/perfil_tile.dart';
 
-// Cuidadores do seed.py do backend, guardados em memória
-const _cuidadores = [
-  Cuidador(
-    nome: 'Theo Casella Mendonça',
-    iniciais: 'TCM',
-    turnoPadrao: 'Manhã',
-    pin: '1234',
-  ),
-  Cuidador(
-    nome: 'Enzo Senatori',
-    iniciais: 'ES',
-    turnoPadrao: 'Tarde',
-    pin: '1234',
-  ),
-  Cuidador(
-    nome: 'Rafael de Oliveira Corrêa',
-    iniciais: 'RC',
-    turnoPadrao: 'Noite',
-    pin: '1234',
-  ),
-];
-
-// Tela inicial: o cuidador escolhe o próprio perfil para abrir o turno
+// Tela inicial (Index): seleção do perfil do cuidador ou acesso ao gestor
 class IndexScreen extends StatelessWidget {
   const IndexScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Filtra apenas os cuidadores ativos conforme regra do backend (WHERE ativo = 1)
+    final cuidadoresAtivos = cuidadores.where((c) => c.ativo).toList();
+
     final cores = Theme.of(context).colorScheme;
     final textos = Theme.of(context).textTheme;
-    final estiloSecao = textos.labelMedium?.copyWith(
-      color: cores.onSurfaceVariant,
-      fontWeight: FontWeight.w600,
-      letterSpacing: 0.8,
-    );
 
     return Scaffold(
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
-          children: [
-            Text(
-              'Geratrix',
-              style: textos.titleLarge?.copyWith(fontWeight: FontWeight.w800),
-            ),
-            Text(
-              'Gestão de cuidado em ILPI',
-              style: textos.bodyMedium?.copyWith(color: cores.onSurfaceVariant),
-            ),
-            const SizedBox(height: 32),
-            Text(
-              'Quem está abrindo o turno?',
-              style: textos.headlineMedium?.copyWith(fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Selecione seu perfil para entrar com o PIN.',
-              style: textos.bodyLarge?.copyWith(color: cores.onSurfaceVariant),
-            ),
-            const SizedBox(height: 32),
-            Text('CUIDADORES', style: estiloSecao),
-            const SizedBox(height: 12),
-            for (final cuidador in _cuidadores) ...[
-              PerfilTile(
-                iniciais: cuidador.iniciais,
-                titulo: cuidador.nome,
-                subtitulo: 'Cuidador · Turno ${cuidador.turnoPadrao}',
-                onTap: () {
-                  // Navega para o PIN passando o cuidador como argumento
-                  Navigator.pushNamed(context, AppRoutes.pin, arguments: cuidador);
-                },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 16),
+              // Cabeçalho com o botão de acesso à tela do Gestor
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: () {
+                    Navigator.pushNamed(context, AppRoutes.gestor);
+                  },
+                  icon: const Icon(Icons.admin_panel_settings_outlined),
+                  label: const Text('Entrar como gestor'),
+                ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 32),
+
+              // Identificação do aplicativo
+              Text(
+                'Geratrix',
+                textAlign: TextAlign.center,
+                style: textos.displayMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: cores.primary,
+                  letterSpacing: -1.0,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Quem está assumindo o plantão?',
+                textAlign: TextAlign.center,
+                style: textos.titleMedium?.copyWith(
+                  color: cores.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              // Grade de seleção de cuidadores ativos
+              Expanded(
+                child: GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 1.1,
+                  ),
+                  itemCount: cuidadoresAtivos.length,
+                  itemBuilder: (context, index) {
+                    final cuidador = cuidadoresAtivos[index];
+                    return Card(
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(20),
+                        onTap: () {
+                          // Navega para a tela de PIN passando o cuidador selecionado
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.pin,
+                            arguments: cuidador,
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircleAvatar(
+                                radius: 28,
+                                backgroundColor: cores.primaryContainer,
+                                foregroundColor: cores.onPrimaryContainer,
+                                child: Text(
+                                  cuidador.iniciais,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                cuidador.nome,
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: textos.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Turno ${cuidador.turnoPadrao}',
+                                style: textos.bodySmall?.copyWith(
+                                  color: cores.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
             ],
-            const SizedBox(height: 20),
-            Text('GESTÃO', style: estiloSecao),
-            const SizedBox(height: 12),
-            PerfilTile(
-              iniciais: 'GD',
-              titulo: 'Gestor — Direção',
-              subtitulo: 'Acesso gerencial',
-              destaque: true,
-              onTap: () {
-                // Navega para a rota do gestor
-                Navigator.pushNamed(context, AppRoutes.gestor);
-              },
-            ),
-          ],
+          ),
         ),
       ),
     );
