@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/item_rotina.dart';
 import '../routes.dart';
+import 'erro_screen.dart';
 
 // Tela de medição de sinais vitais e parâmetros de saúde com alerta em duas etapas
 class CheckinSinaisVitaisScreen extends StatefulWidget {
@@ -64,7 +65,15 @@ class _CheckinSinaisVitaisScreenState extends State<CheckinSinaisVitaisScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final item = ModalRoute.of(context)!.settings.arguments as ItemRotina;
+    final item = ModalRoute.of(context)?.settings.arguments as ItemRotina?;
+
+    // Proteção contra F5 / acesso direto sem item de rotina
+    if (item == null) {
+      return const ErroScreen(
+        mensagem: 'Esta tela abre a partir do início do app.',
+      );
+    }
+
     final cores = Theme.of(context).colorScheme;
     final textos = Theme.of(context).textTheme;
 
