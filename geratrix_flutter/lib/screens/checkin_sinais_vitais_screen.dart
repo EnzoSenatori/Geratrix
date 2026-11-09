@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/item_rotina.dart';
 import '../routes.dart';
 
-// Tela especializada para registro de sinais vitais (PA, Glicemia, Temp, FC)
+// Tela de medição de sinais vitais e parâmetros de saúde com alerta em duas etapas
 class CheckinSinaisVitaisScreen extends StatefulWidget {
   const CheckinSinaisVitaisScreen({super.key});
 
@@ -12,63 +12,65 @@ class CheckinSinaisVitaisScreen extends StatefulWidget {
 }
 
 class _CheckinSinaisVitaisScreenState extends State<CheckinSinaisVitaisScreen> {
-  // Controladores para os campos numéricos de medição
-  final _sistolicaController = TextEditingController();
-  final _diastolicaController = TextEditingController();
-  final _glicemiaController = TextEditingController();
-  final _temperaturaController = TextEditingController();
-  final _bpmController = TextEditingController();
+  final _valorController = TextEditingController();
   final _observacaoController = TextEditingController();
 
-  // Estado para controle de alerta de alteração nos parâmetros
-  bool _temAlertaParametros = false;
+  bool _confirmandoForaDaFaixa = false;
+  String? _erro;
 
   @override
   void dispose() {
-    // Descarte obrigatório de todos os controladores para gestão de memória
-    _sistolicaController.dispose();
-    _diastolicaController.dispose();
-    _glicemiaController.dispose();
-    _temperaturaController.dispose();
-    _bpmController.dispose();
+    _valorController.dispose();
     _observacaoController.dispose();
     super.dispose();
   }
 
-  // Avalia se os valores digitados fogem da faixa de normalidade
-  void _avaliarParametros() {
-    final sistolica = int.tryParse(_sistolicaController.text) ?? 0;
-    final glicemia = int.tryParse(_glicemiaController.text) ?? 0;
+  // Valida o valor e aplica o alerta em duas etapas do backend (US-13)
+  void _salvarMedicao(ItemRotina item) {
+    final valor = double.tryParse(_valorController.text.replaceAll(',', '.'));
+    if (valor == null) {
+      setState(() => _erro = 'Informe o valor medido.');
+      return;
+    }
 
-    setState(() {
-      // Exemplo de regra clínica: PA Systolic > 140 ou Glicemia > 180 aciona alerta visual
-      _temAlertaParametros = (sistolica >= 140) || (glicemia >= 180);
-    });
-  }
+    final min = item.faixaMin;
+    final max = item.faixaMax;
+    final foraDaFaixa = (min != null && valor < min) || (max != null && valor > max);
 
-  // Confirma o registro dos sinais vitais
-  void _salvarMedicao() {
+    if (foraDaFaixa && !_confirmandoForaDaFaixa) {
+      setState(() {
+        _erro = null;
+        _confirmandoForaDaFaixa = true; // 1ª etapa: mostra o alerta
+      });
+      return;
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Sinais vitais registrados com sucesso!')),
+      const SnackBar(content: Text('Medição registrada com sucesso!')),
     );
-    Navigator.pop(context);
+    Navigator.pop(context, 'feito'); // 2ª etapa, ou valor dentro da faixa
   }
 
-  // Encaminha para o fluxo de não realização
-  void _registrarNaoRealizado(ItemRotina item) {
-    Navigator.pushNamed(
+  // Abre a tela de "não realizado" e repassa o resultado se confirmado
+  Future<void> _registrarNaoRealizado(ItemRotina item) async {
+    final resultado = await Navigator.pushNamed(
       context,
       AppRoutes.naoRealizado,
       arguments: item,
     );
+    if (!mounted || resultado == null) return;
+    Navigator.pop(context, resultado);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Resgata o item repassado pela lista
     final item = ModalRoute.of(context)!.settings.arguments as ItemRotina;
     final cores = Theme.of(context).colorScheme;
     final textos = Theme.of(context).textTheme;
+
+    final referenciaTexto = (item.faixaMin != null && item.faixaMax != null)
+        ? 'Referência: ${item.faixaMin!.toStringAsFixed(item.faixaMin! % 1 == 0 ? 0 : 1)}–${item.faixaMax!.toStringAsFixed(item.faixaMax! % 1 == 0 ? 0 : 1)} ${item.unidade ?? ""}'
+        : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -85,7 +87,7 @@ class _CheckinSinaisVitaisScreenState extends State<CheckinSinaisVitaisScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 children: [
                   Text(
-                    'Aferição de sinais vitais',
+                    item.tipo,
                     style: textos.titleLarge?.copyWith(
                       fontWeight: FontWeight.w800,
                       fontSize: 28,
@@ -94,28 +96,27 @@ class _CheckinSinaisVitaisScreenState extends State<CheckinSinaisVitaisScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${item.residente} • Horário: ${item.horario}',
+                    '${item.residente.nome} • Horário: ${item.horario}',
                     style: textos.bodyLarge?.copyWith(color: cores.onSurfaceVariant),
                   ),
                   const SizedBox(height: 24),
 
-                  // Banner dinâmico acionado quando há parâmetros alterados
-                  if (_temAlertaParametros) ...[
+                  // Banner de alerta em duas etapas (fora da faixa)
+                  if (_confirmandoForaDaFaixa) ...[
                     Card(
                       color: cores.errorContainer,
-                      elevation: 0,
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Row(
                           children: [
-                            Icon(Icons.warning_rounded, color: cores.error, size: 20),
+                            Icon(Icons.warning_amber_rounded, color: cores.error, size: 24),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                'Atenção: Parâmetro(s) fora da faixa de referência normal.',
+                                'Atenção: o valor informado está fora da faixa de referência esperada. Toque novamente para confirmar.',
                                 style: textos.bodyMedium?.copyWith(
                                   color: cores.error,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
@@ -123,125 +124,36 @@ class _CheckinSinaisVitaisScreenState extends State<CheckinSinaisVitaisScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
                   ],
 
-                  // Seção: Pressão Arterial
+                  // Campo de valor da medição
+                  TextField(
+                    controller: _valorController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    onChanged: (_) {
+                      if (_confirmandoForaDaFaixa || _erro != null) {
+                        setState(() {
+                          _confirmandoForaDaFaixa = false;
+                          _erro = null;
+                        });
+                      }
+                    },
+                    decoration: InputDecoration(
+                      labelText: '${item.tipo} (${item.unidade ?? ""})',
+                      helperText: referenciaTexto,
+                      errorText: _erro,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Observação opcional
                   Text(
-                    'PRESSÃO ARTERIAL (mmHg)',
+                    'OBSERVAÇÃO (OPCIONAL)',
                     style: textos.labelMedium?.copyWith(
                       color: cores.onSurfaceVariant,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 0.8,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _sistolicaController,
-                          keyboardType: TextInputType.number,
-                          onChanged: (_) => _avaliarParametros(),
-                          decoration: const InputDecoration(
-                            labelText: 'Sistólica (MAX)',
-                            hintText: 'Ex: 120',
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: TextField(
-                          controller: _diastolicaController,
-                          keyboardType: TextInputType.number,
-                          onChanged: (_) => _avaliarParametros(),
-                          decoration: const InputDecoration(
-                            labelText: 'Diastólica (MIN)',
-                            hintText: 'Ex: 80',
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Seção: Glicemia e Temperatura
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'GLICEMIA (mg/dL)',
-                              style: textos.labelMedium?.copyWith(
-                                color: cores.onSurfaceVariant,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            TextField(
-                              controller: _glicemiaController,
-                              keyboardType: TextInputType.number,
-                              onChanged: (_) => _avaliarParametros(),
-                              decoration: const InputDecoration(
-                                hintText: 'Ex: 99',
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'TEMP. (°C)',
-                              style: textos.labelMedium?.copyWith(
-                                color: cores.onSurfaceVariant,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            TextField(
-                              controller: _temperaturaController,
-                              keyboardType: TextInputType.numberWithOptions(decimal: true),
-                              decoration: const InputDecoration(
-                                hintText: 'Ex: 36.5',
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Seção: Frequência Cardíaca
-                  Text(
-                    'FREQUÊNCIA CARDÍACA (BPM)',
-                    style: textos.labelMedium?.copyWith(
-                      color: cores.onSurfaceVariant,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _bpmController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      hintText: 'Ex: 72',
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Campo de Observações Gerais
-                  Text(
-                    'OBSERVAÇÕES CLÍNICAS',
-                    style: textos.labelMedium?.copyWith(
-                      color: cores.onSurfaceVariant,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -250,24 +162,23 @@ class _CheckinSinaisVitaisScreenState extends State<CheckinSinaisVitaisScreen> {
                     maxLines: 2,
                     textCapitalization: TextCapitalization.sentences,
                     decoration: const InputDecoration(
-                      hintText: 'Intercorrências ou comportamento durante o exame...',
+                      hintText: 'Ex: Residente em repouso há 15 min...',
                     ),
                   ),
-                  const SizedBox(height: 24),
                 ],
               ),
             ),
 
-            // Rodapé com ações principais
+            // Rodapé
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   FilledButton.icon(
-                    onPressed: _salvarMedicao,
-                    icon: const Icon(Icons.favorite_rounded),
-                    label: const Text('Salvar medição'),
+                    onPressed: () => _salvarMedicao(item),
+                    icon: Icon(_confirmandoForaDaFaixa ? Icons.warning_rounded : Icons.check_circle_rounded),
+                    label: Text(_confirmandoForaDaFaixa ? 'Confirmar valor fora da faixa' : 'Salvar medição'),
                   ),
                   const SizedBox(height: 8),
                   TextButton(
@@ -275,7 +186,7 @@ class _CheckinSinaisVitaisScreenState extends State<CheckinSinaisVitaisScreen> {
                     style: TextButton.styleFrom(
                       foregroundColor: cores.error,
                     ),
-                    child: const Text('Não foi possível aferir'),
+                    child: const Text('Não foi possível medir'),
                   ),
                 ],
               ),
