@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
 
 import '../models/item_rotina.dart';
-import '../routes.dart';
 
-// Tela para registrar o motivo de uma tarefa não ter sido executada
+// Motivos homologados no backend conforme RN-04
+const _motivosNaoRealizado = [
+  'Recusa do residente',
+  'Residente dormindo',
+  'Material indisponível',
+  'Emergência',
+];
+
+// Tela de registro de exceção / não realização de tarefa
 class NaoRealizadoScreen extends StatefulWidget {
   const NaoRealizadoScreen({super.key});
 
@@ -12,19 +19,8 @@ class NaoRealizadoScreen extends StatefulWidget {
 }
 
 class _NaoRealizadoScreenState extends State<NaoRealizadoScreen> {
-  // Guarda qual botão de motivo foi clicado
   String? _motivoSelecionado;
-  // Controlador para o texto de justificativa
   final _justificativaController = TextEditingController();
-
-  // Lista padrão de motivos para facilitar o preenchimento (Guia Visual)
-  final _motivos = [
-    'Recusa do residente',
-    'Dormindo',
-    'Ausência (saída/consulta)',
-    'Agitação / Comportamento',
-    'Outro',
-  ];
 
   @override
   void dispose() {
@@ -32,20 +28,17 @@ class _NaoRealizadoScreenState extends State<NaoRealizadoScreen> {
     super.dispose();
   }
 
+  // Devolve o resultado 'nao_realizado' para a tela anterior
   void _confirmar() {
-    // Futuramente, enviará _motivoSelecionado e _justificativaController.text para a API
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Registro salvo com sucesso!')),
+      const SnackBar(content: Text('Registro de não realização gravado!')),
     );
-    // Navega de volta até encontrar a tela da Lista, removendo as telas de check-in do caminho
-    Navigator.popUntil(context, ModalRoute.withName(AppRoutes.lista));
+    Navigator.pop(context, 'nao_realizado');
   }
 
   @override
   Widget build(BuildContext context) {
-    // Resgata a tarefa enviada pela tela anterior
     final item = ModalRoute.of(context)!.settings.arguments as ItemRotina;
-    
     final cores = Theme.of(context).colorScheme;
     final textos = Theme.of(context).textTheme;
 
@@ -64,23 +57,22 @@ class _NaoRealizadoScreenState extends State<NaoRealizadoScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 children: [
                   Text(
-                    'Não realizado',
+                    'Não realização de tarefa',
                     style: textos.titleLarge?.copyWith(
                       fontWeight: FontWeight.w800,
                       fontSize: 28,
                       letterSpacing: -0.5,
-                      color: cores.error, // Destaque em vermelho (alerta de falha)
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   Text(
-                    '${item.tipo} • ${item.residente}',
+                    '${item.tipo} • ${item.residente.nome}',
                     style: textos.bodyLarge?.copyWith(color: cores.onSurfaceVariant),
                   ),
-                  const SizedBox(height: 32),
-                  
+                  const SizedBox(height: 24),
+
                   Text(
-                    'SELECIONE O MOTIVO PRINCIPAL',
+                    'SELECOIONE O MOTIVO (OBRIGATÓRIO)',
                     style: textos.labelMedium?.copyWith(
                       color: cores.onSurfaceVariant,
                       fontWeight: FontWeight.w600,
@@ -88,40 +80,36 @@ class _NaoRealizadoScreenState extends State<NaoRealizadoScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  
-                  // Wrap permite colocar os chips em linha e quebrar para a próxima quando faltar espaço
+
+                  // Chips com os motivos da RN-04
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: _motivos.map((motivo) {
+                    children: _motivosNaoRealizado.map((motivo) {
                       final isSelecionado = _motivoSelecionado == motivo;
                       return ChoiceChip(
                         label: Text(motivo),
                         selected: isSelecionado,
                         onSelected: (selecionado) {
                           setState(() {
-                            // Se clicar num selecionado, ele desmarca (null)
                             _motivoSelecionado = selecionado ? motivo : null;
                           });
                         },
                         backgroundColor: cores.surfaceContainerHighest,
-                        selectedColor: cores.errorContainer, // Fundo vermelho-claro quando ativo
+                        selectedColor: cores.errorContainer,
                         labelStyle: TextStyle(
                           color: isSelecionado ? cores.error : cores.onSurface,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
+                          fontWeight: isSelecionado ? FontWeight.bold : FontWeight.normal,
                         ),
-                        shape: const StadiumBorder(),
                         side: BorderSide.none,
-                        showCheckmark: false, // Esconde o ícone "check" para manter o visual limpo
+                        shape: const StadiumBorder(),
                       );
                     }).toList(),
                   ),
-                  
-                  const SizedBox(height: 32),
-                  
+                  const SizedBox(height: 24),
+
                   Text(
-                    'JUSTIFICATIVA / DETALHES',
+                    'JUSTIFICATIVA COMPLEMENTAR (OPCIONAL)',
                     style: textos.labelMedium?.copyWith(
                       color: cores.onSurfaceVariant,
                       fontWeight: FontWeight.w600,
@@ -131,28 +119,27 @@ class _NaoRealizadoScreenState extends State<NaoRealizadoScreen> {
                   const SizedBox(height: 8),
                   TextField(
                     controller: _justificativaController,
-                    maxLines: 4,
+                    maxLines: 3,
                     textCapitalization: TextCapitalization.sentences,
                     decoration: const InputDecoration(
-                      hintText: 'Descreva o que aconteceu...',
+                      hintText: 'Adicione detalhes sobre a situação...',
                     ),
                   ),
                 ],
               ),
             ),
-            
-            // Rodapé fixo
+
+            // Rodapé com o botão de confirmação
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: FilledButton(
-                // Força as cores do botão destrutivo do Guia Visual
+              child: FilledButton.icon(
                 style: FilledButton.styleFrom(
                   backgroundColor: cores.error,
-                  foregroundColor: cores.surface, // Branco
+                  foregroundColor: cores.surface,
                 ),
-                // O botão só fica habilitado se algum motivo for selecionado
                 onPressed: _motivoSelecionado != null ? _confirmar : null,
-                child: const Text('Confirmar não realização'),
+                icon: const Icon(Icons.warning_amber_rounded),
+                label: const Text('Confirmar registro'),
               ),
             ),
           ],
