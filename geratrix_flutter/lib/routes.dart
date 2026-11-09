@@ -2,17 +2,17 @@
 class AppRoutes {
   AppRoutes._(); // não pode ser instanciada
 
-  static const String index = "/";
-  static const String pin = "/pin";
-  static const String gestor = "/gestor";
-  static const String abrirTurno = "/abrir-turno";
-  static const String lista = "/lista";
-  static const String checkin = "/checkin";
-  static const String checkinSinaisVitais = "/checkin-sinais-vitais";
-  static const String checkinMedicamento = "/checkin-medicamento";
-  static const String naoRealizado = "/nao-realizado";
-  static const String residente = "/residente";
-  static const String encerrarTurno = "/encerrar-turno";
-  static const String historicoTurnos = "/historico-turnos";
-  static const String relatorioGestor = "/relatorio-gestor";
+  static const String index = '/';
+  static const String pin = '/pin';
+  static const String gestor = '/gestor';
+  static const String abrirTurno = '/abrir-turno';
+  static const String lista = '/lista';
+  static const String checkin = '/checkin';
+  static const String checkinSinaisVitais = '/checkin-sinais-vitais';
+  static const String checkinMedicamento = '/checkin-medicamento';
+  static const String naoRealizado = '/nao-realizado';
+  static const String residente = '/residente';
+  static const String encerrarTurno = '/encerrar-turno';
+  static const String historicoTurnos = '/historico-turnos';
+  static const String exercicio = '/exercicio';
 }
