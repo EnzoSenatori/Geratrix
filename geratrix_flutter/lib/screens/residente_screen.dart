@@ -1,27 +1,22 @@
 import 'package:flutter/material.dart';
 
 import '../models/residente.dart';
+import 'erro_screen.dart';
 
-// Tela de prontuário rápido do residente (exibe alergias, quarto e emergência)
+// Tela de Prontuário Rápido do Residente
 class ResidenteScreen extends StatelessWidget {
   const ResidenteScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Recebe o objeto Residente passado via arguments (ou usa um mock de fallback se nulo)
-    final args = ModalRoute.of(context)?.settings.arguments;
-    final residente = (args is Residente)
-        ? args
-        : const Residente(
-            id: '1',
-            nome: 'Dona Carmem Silva',
-            quarto: 'Quarto 102 - Leito A',
-            iniciais: 'CS',
-            alergias: ['Dipirona', 'Frutos do Mar'],
-            restricoesAlimentares: ['Dieta hipossódica (pouco sal)', 'Sem lactose'],
-            contatoEmergencia: 'Filha: Ana Maria (11) 98765-4321',
-            observacoesMedicas: 'Hipertensa. Apresenta leve tontura ao se levantar rapidamente.',
-          );
+    final residente = ModalRoute.of(context)?.settings.arguments as Residente?;
+
+    // Proteção contra navegação direta / F5 sem argumento
+    if (residente == null) {
+      return const ErroScreen(
+        mensagem: 'Esta tela abre a partir do início do app.',
+      );
+    }
 
     final cores = Theme.of(context).colorScheme;
     final textos = Theme.of(context).textTheme;
@@ -36,9 +31,9 @@ class ResidenteScreen extends StatelessWidget {
       ),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+          padding: const EdgeInsets.all(16.0),
           children: [
-            // Cabeçalho de Identificação do Residente
+            // Identificação do Residente
             Row(
               children: [
                 CircleAvatar(
@@ -47,7 +42,10 @@ class ResidenteScreen extends StatelessWidget {
                   foregroundColor: cores.onPrimaryContainer,
                   child: Text(
                     residente.iniciais,
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -59,13 +57,13 @@ class ResidenteScreen extends StatelessWidget {
                         residente.nome,
                         style: textos.titleLarge?.copyWith(
                           fontWeight: FontWeight.w800,
-                          fontSize: 22,
                         ),
                       ),
-                      const SizedBox(height: 4),
                       Text(
                         residente.quarto,
-                        style: textos.bodyMedium?.copyWith(color: cores.onSurfaceVariant),
+                        style: textos.bodyLarge?.copyWith(
+                          color: cores.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
@@ -74,10 +72,8 @@ class ResidenteScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // Card de Alergias (Alerta com fundo errorContainer se houver alergias)
+            // Alergias
             Card(
-              color: residente.alergias.isNotEmpty ? cores.errorContainer : cores.surface,
-              elevation: residente.alergias.isNotEmpty ? 0 : 1,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -85,39 +81,103 @@ class ResidenteScreen extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Icon(
-                          Icons.warning_amber_rounded,
-                          color: residente.alergias.isNotEmpty ? cores.error : cores.onSurfaceVariant,
-                          size: 20,
-                        ),
+                        Icon(Icons.warning_amber_rounded, color: cores.secondary, size: 22),
                         const SizedBox(width: 8),
                         Text(
-                          'ALERGIAS CONHECIDAS',
-                          style: textos.labelMedium?.copyWith(
-                            color: residente.alergias.isNotEmpty ? cores.error : cores.onSurfaceVariant,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.8,
-                          ),
+                          'Alergias',
+                          style: textos.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    if (residente.alergias.isEmpty)
+                      Text('Nenhuma alergia conhecida.', style: textos.bodyMedium)
+                    else
+                      Wrap(
+                        spacing: 8,
+                        children: residente.alergias.map((alergia) {
+                          return Chip(
+                            label: Text(alergia),
+                            backgroundColor: cores.errorContainer,
+                            labelStyle: TextStyle(
+                              color: cores.error,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            side: BorderSide.none,
+                          );
+                        }).toList(),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Restrições Alimentares
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.restaurant_rounded, color: cores.secondary, size: 22),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Restrições Alimentares',
+                          style: textos.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    if (residente.restricoesAlimentares.isEmpty)
+                      Text('Sem restrições cadastradas.', style: textos.bodyMedium)
+                    else
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: residente.restricoesAlimentares.map((restricao) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 4.0),
+                            child: Text('• $restricao', style: textos.bodyMedium),
+                          );
+                        }).toList(),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Contato de Emergência
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.phone_rounded, color: cores.secondary, size: 22),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Contato de Emergência',
+                          style: textos.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      residente.alergias.isNotEmpty
-                          ? residente.alergias.join(', ')
-                          : 'Nenhuma alergia registrada.',
-                      style: textos.bodyLarge?.copyWith(
-                        color: residente.alergias.isNotEmpty ? cores.error : cores.onSurface,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      residente.contatoEmergencia,
+                      style: textos.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
 
-            // Card de Restrições Alimentares
+            // Observações Médicas
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -126,58 +186,11 @@ class ResidenteScreen extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.restaurant_rounded, color: cores.primary, size: 20),
+                        Icon(Icons.medical_information_outlined, color: cores.secondary, size: 22),
                         const SizedBox(width: 8),
                         Text(
-                          'RESTRIÇÕES ALIMENTARES',
-                          style: textos.labelMedium?.copyWith(
-                            color: cores.onSurfaceVariant,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.8,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    for (final restricao in residente.restricoesAlimentares) ...[
-                      Row(
-                        children: [
-                          Icon(Icons.circle, size: 6, color: cores.primary),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              restricao,
-                              style: textos.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Card de Observações Médicas e Contato de Emergência
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.medical_information_rounded, color: cores.primary, size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          'OBSERVAÇÕES CLÍNICAS',
-                          style: textos.labelMedium?.copyWith(
-                            color: cores.onSurfaceVariant,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.8,
-                          ),
+                          'Observações Médicas',
+                          style: textos.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -185,26 +198,6 @@ class ResidenteScreen extends StatelessWidget {
                     Text(
                       residente.observacoesMedicas,
                       style: textos.bodyMedium,
-                    ),
-                    const Divider(height: 24),
-                    Row(
-                      children: [
-                        Icon(Icons.phone_rounded, color: cores.primary, size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          'CONTATO DE EMERGÊNCIA',
-                          style: textos.labelMedium?.copyWith(
-                            color: cores.onSurfaceVariant,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.8,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      residente.contatoEmergencia,
-                      style: textos.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),

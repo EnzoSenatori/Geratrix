@@ -1,48 +1,28 @@
 import 'package:flutter/material.dart';
 
-// Modelo temporário para o histórico de plantões finalizados
-class TurnoHistorico {
-  final String id;
-  final String data;
-  final String cuidador;
-  final String turno;
-  final int concluidas;
-  final int naoRealizadas;
-  final String passagemPlantao;
+import '../models/turno_historico.dart';
 
-  const TurnoHistorico({
-    required this.id,
-    required this.data,
-    required this.cuidador,
-    required this.turno,
-    required this.concluidas,
-    required this.naoRealizadas,
-    required this.passagemPlantao,
-  });
-}
-
-const _historicoMock = [
+// Dados fictícios de histórico de turnos anteriores
+final _historicoMock = [
   TurnoHistorico(
-    id: '101',
-    data: 'Hoje, 07:15',
-    cuidador: 'Enzo Senatori',
+    data: 'Hoje, 07:00',
+    cuidador: 'Rafael de Oliveira Corrêa',
     turno: 'Noite',
-    concluidas: 12,
+    concluidas: 2,
     naoRealizadas: 1,
-    passagemPlantao: 'Dona Carmem reclamou de dor lombar. Medicação administrada conforme prescrição.',
+    observacoes: 'Dona Maria acordou duas vezes durante a noite. Sr. José recusou o lanche das 22h.',
   ),
   TurnoHistorico(
-    id: '100',
     data: 'Ontem, 19:00',
-    cuidador: 'Theo Casella Mendonça',
+    cuidador: 'Enzo Senatori',
     turno: 'Tarde',
-    concluidas: 15,
+    concluidas: 6,
     naoRealizadas: 0,
-    passagemPlantao: 'Sem intercorrências graves. Todos os residentes alimentados.',
+    observacoes: 'Turno sem intercorrências graves. Todos os medicamentos administrados.',
   ),
 ];
 
-// Tela de consulta do histórico de turnos encerrados para a gestão
+// Tela de Histórico de Turnos e Relatórios Gerenciais
 class HistoricoTurnosScreen extends StatelessWidget {
   const HistoricoTurnosScreen({super.key});
 
@@ -63,44 +43,83 @@ class HistoricoTurnosScreen extends StatelessWidget {
         child: ListView.separated(
           padding: const EdgeInsets.all(16.0),
           itemCount: _historicoMock.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 12),
+          separatorBuilder: (context, index) => const SizedBox(height: 16),
           itemBuilder: (context, index) {
             final turno = _historicoMock[index];
 
             return Card(
-              child: ExpansionTile(
-                leading: CircleAvatar(
-                  backgroundColor: cores.primaryContainer,
-                  foregroundColor: cores.onPrimaryContainer,
-                  child: const Icon(Icons.history_rounded, size: 20),
-                ),
-                title: Text(
-                  '${turno.cuidador} (${turno.turno})',
-                  style: textos.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text(turno.data),
-                childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                expandedCrossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Divider(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Concluídas: ${turno.concluidas}', style: TextStyle(color: cores.primary, fontWeight: FontWeight.bold)),
-                      Text('Não realizadas: ${turno.naoRealizadas}', style: TextStyle(color: cores.error, fontWeight: FontWeight.bold)),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          turno.data,
+                          style: textos.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Chip(
+                          label: Text(turno.turno),
+                          labelStyle: TextStyle(
+                            color: cores.onPrimaryContainer,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                          backgroundColor: cores.primaryContainer,
+                          side: BorderSide.none,
+                          shape: const StadiumBorder(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Cuidador: ${turno.cuidador}',
+                      style: textos.bodyMedium?.copyWith(
+                        color: cores.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        // Ajustado para cores.secondary para garantir contraste em textos/ícones sobre fundo claro
+                        Text(
+                          '${turno.concluidas} concluídas',
+                          style: textos.bodySmall?.copyWith(
+                            color: cores.secondary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          '${turno.naoRealizadas} não realizadas',
+                          style: textos.bodySmall?.copyWith(
+                            color: cores.error,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (turno.observacoes.isNotEmpty) ...[
+                      const Divider(height: 24),
+                      Text(
+                        'Passagem de plantão:',
+                        style: textos.labelMedium?.copyWith(
+                          color: cores.onSurfaceVariant,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        turno.observacoes,
+                        style: textos.bodyMedium,
+                      ),
                     ],
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Passagem de plantão:',
-                    style: textos.labelMedium?.copyWith(color: cores.onSurfaceVariant, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    turno.passagemPlantao,
-                    style: textos.bodyMedium,
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
           },
