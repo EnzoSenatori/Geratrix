@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/item_rotina.dart';
+import 'erro_screen.dart';
 
 // Motivos homologados no backend conforme RN-04
 const _motivosNaoRealizado = [
@@ -38,7 +39,15 @@ class _NaoRealizadoScreenState extends State<NaoRealizadoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final item = ModalRoute.of(context)!.settings.arguments as ItemRotina;
+    final item = ModalRoute.of(context)?.settings.arguments as ItemRotina?;
+
+    // Proteção contra F5 / acesso direto sem item de rotina
+    if (item == null) {
+      return const ErroScreen(
+        mensagem: 'Esta tela abre a partir do início do app.',
+      );
+    }
+
     final cores = Theme.of(context).colorScheme;
     final textos = Theme.of(context).textTheme;
 
@@ -72,7 +81,7 @@ class _NaoRealizadoScreenState extends State<NaoRealizadoScreen> {
                   const SizedBox(height: 24),
 
                   Text(
-                    'SELECOIONE O MOTIVO (OBRIGATÓRIO)',
+                    'SELECIONE O MOTIVO (OBRIGATÓRIO)',
                     style: textos.labelMedium?.copyWith(
                       color: cores.onSurfaceVariant,
                       fontWeight: FontWeight.w600,
