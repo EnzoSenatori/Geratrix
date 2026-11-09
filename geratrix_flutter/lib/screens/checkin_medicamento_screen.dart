@@ -22,19 +22,23 @@ class _CheckinMedicamentoScreenState extends State<CheckinMedicamentoScreen> {
     super.dispose();
   }
 
+  // Registra a administração do medicamento e devolve 'feito' para a lista
   void _confirmarAdministracao() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Administração de medicamento registrada!')),
     );
-    Navigator.pop(context);
+    Navigator.pop(context, 'feito');
   }
 
-  void _registrarNaoRealizado(ItemRotina item) {
-    Navigator.pushNamed(
+  // Abre a tela de "não realizado" e repassa o resultado se confirmado
+  Future<void> _registrarNaoRealizado(ItemRotina item) async {
+    final resultado = await Navigator.pushNamed(
       context,
       AppRoutes.naoRealizado,
       arguments: item,
     );
+    if (!mounted || resultado == null) return;
+    Navigator.pop(context, resultado);
   }
 
   @override
@@ -67,7 +71,7 @@ class _CheckinMedicamentoScreenState extends State<CheckinMedicamentoScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${item.residente} • Horário: ${item.horario}',
+                    '${item.residente.nome} • Horário: ${item.horario}',
                     style: textos.bodyLarge?.copyWith(color: cores.onSurfaceVariant),
                   ),
                   const SizedBox(height: 24),
@@ -85,7 +89,7 @@ class _CheckinMedicamentoScreenState extends State<CheckinMedicamentoScreen> {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
-                                  item.tipo, // Ex: "Medicação: Losartana 50mg"
+                                  item.tipo,
                                   style: textos.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                                 ),
                               ),
