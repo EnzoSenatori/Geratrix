@@ -81,7 +81,23 @@ class _CheckinTarefaScreenState extends State<CheckinTarefaScreen> {
                     '${item.residente.nome} • Horário: ${item.horario}',
                     style: textos.bodyLarge?.copyWith(color: cores.onSurfaceVariant),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 8),
+                  // Botão de atalho para abrir o Prontuário Rápido do Residente
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: () {
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.residente,
+                          arguments: item.residente,
+                        );
+                      },
+                      icon: const Icon(Icons.badge_outlined, size: 20),
+                      label: const Text('Ver prontuário'),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   Text(
                     'OBSERVAÇÕES DA TAREFA',
                     style: textos.labelMedium?.copyWith(
