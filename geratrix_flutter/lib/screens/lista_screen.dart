@@ -77,6 +77,8 @@ class _ListaScreenState extends State<ListaScreen> {
             minHeight: 8,
           ),
           const SizedBox(height: 16),
+          
+          // Trilha de filtros
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
