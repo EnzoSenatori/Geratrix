@@ -41,6 +41,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.19.1"
+  crypto:
+    dependency: transitive
+    description:
+      name: crypto
+      sha256: e3626ae6270383c9e3a549f34c9e4cd26c09ae6a9adaab2bf4737a00340efdc4
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.8"
   cupertino_icons:
     dependency: "direct main"
     description:
@@ -49,6 +57,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.9"
+  event_bus:
+    dependency: transitive
+    description:
+      name: event_bus
+      sha256: "1a55e97923769c286d295240048fc180e7b0768902c3c2e869fe059aafa15304"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.1"
   fake_async:
     dependency: transitive
     description:
@@ -131,6 +147,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.18.3"
+  mqtt_client:
+    dependency: "direct main"
+    description:
+      name: mqtt_client
+      sha256: "11fec8318bf55ae66657091714233ff459264efdc11ce1d064b01f78348a6d88"
+      url: "https://pub.dev"
+    source: hosted
+    version: "10.14.0"
   path:
     dependency: transitive
     description:
@@ -192,6 +216,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.12"
+  typed_data:
+    dependency: transitive
+    description:
+      name: typed_data
+      sha256: f9049c039ebfeb4cf7a7104a675823cd72dba8297f264b6637062516699fa006
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.4.0"
   vector_math:
     dependency: transitive
     description:
@@ -208,6 +240,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "15.4.0"
+  web:
+    dependency: transitive
+    description:
+      name: web
+      sha256: e119e82ac4795c7925103b7cf3768191f33941b99e7ccffbd6c645201d9f606b
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.2"
 sdks:
   dart: ">=3.13.7 <4.0.0"
   flutter: ">=3.18.0-18.0.pre.54"
