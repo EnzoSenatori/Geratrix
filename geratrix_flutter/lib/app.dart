@@ -56,6 +56,36 @@ class GeratrixApp extends StatelessWidget {
             borderRadius: BorderRadius.all(Radius.circular(20)),
           ),
         ),
+        // Configuração global da AppBar para mesclar com o fundo
+        appBarTheme: const AppBarThemeData(
+          backgroundColor: AppColors.background,
+          foregroundColor: AppColors.textPrimary,
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+        ),
+        // Estilo global de botões preenchidos (Guia Visual: altura 52)
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            minimumSize: const Size(64, 52),
+            shape: const StadiumBorder(),
+            textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          ),
+        ),
+        // Estilo global dos campos de texto (Guia Visual: fundo surfaceVariant e cantos 14)
+        inputDecorationTheme: const InputDecorationThemeData(
+          filled: true,
+          fillColor: AppColors.surfaceVariant,
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(14)),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(14)),
+            borderSide: BorderSide(color: AppColors.primaryStrong, width: 2),
+          ),
+        ),
       ),
       initialRoute: AppRoutes.index,
       routes: {
