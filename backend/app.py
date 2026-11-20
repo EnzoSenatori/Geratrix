@@ -586,6 +586,7 @@ def turno_encerrar():
 # ---------------------------------------------------------------------------
 # API JSON para o app Flutter (fase 1). Usa a mesma sessão (cookie) das telas HTML.
 # ---------------------------------------------------------------------------
+import math
 from datetime import date
 from flask import jsonify, request, session, redirect, send_from_directory
 from werkzeug.security import safe_join
@@ -677,7 +678,7 @@ def dados_da_abertura(db):
            FROM turno t
            JOIN cuidador c ON c.id = t.cuidador_id
            WHERE t.encerrado_em IS NOT NULL
-           ORDER BY t.encerrado_em DESC LIMIT 1"""
+           ORDER BY t.encerrado_em DESC, t.id DESC LIMIT 1"""
     ).fetchone()
 
     alertas = []
@@ -757,12 +758,12 @@ def api_turno_abrir():
 # Itens do turno: os mesmos que a rota /lista mostra, com o status calculado pela RN-07
 @app.route("/api/lista")
 def api_lista():
-    recusa = exigir_login(precisa_turno=True)
+    db = get_db()
+    recusa = exigir_turno_aberto(db)
     if recusa:
         return recusa
 
-    db = get_db()
-    cuidador = db.execute("SELECT * FROM cuidador WHERE id = ?", (session["cuidador_id"],)).fetchone()
+    cuidador =db.execute("SELECT * FROM cuidador WHERE id = ?", (session["cuidador_id"],)).fetchone()
     if not cuidador:
         session.clear()
         return jsonify(erro="Sessão expirada. Entre novamente."), 401
@@ -806,6 +807,198 @@ def api_sair():
         return recusa
     session.clear()
     return "", 204
+
+# ---------------------------------------------------------------------------
+# API de registros (fase 2). Copia as regras das rotas HTML /checkin/... e /turno/encerrar
+# sem alterá-las; cuidador e turno vêm sempre da sessão, nunca do corpo da requisição.
+# ---------------------------------------------------------------------------
+
+# Motivos aceitos para não realizado (RN-04): mesmas chaves e textos da rota /checkin/<id>/nao-realizado
+MOTIVOS_NAO_REALIZADO = {
+    "recusa": "Recusa do residente",
+    "dormindo": "Residente dormindo",
+    "material-indisponivel": "Material indisponível",
+    "emergencia": "Emergência"
+}
+
+# Exige cuidador logado com o turno da sessão ainda aberto; turno encerrado ou de outro cuidador derruba a sessão
+def exigir_turno_aberto(db):
+    cuidador_id = session.get("cuidador_id")
+    turno_id = session.get("turno_id")
+    if not cuidador_id or not turno_id:
+        return jsonify(erro="Sessão expirada. Entre novamente."), 401
+    turno = db.execute(
+        "SELECT id FROM turno WHERE id = ? AND cuidador_id = ? AND encerrado_em IS NULL",
+        (turno_id, cuidador_id)
+    ).fetchone()
+    if not turno:
+        session.clear()
+        return jsonify(erro="Sessão expirada. Entre novamente."), 401
+    return None
+
+# Busca o item da rotina com residente, tipo e faixa (mesma consulta das rotas /checkin/...)
+def buscar_item(db, item_id):
+    return db.execute(
+        """SELECT i.*, r.nome AS residente, t.nome AS tipo, t.natureza, t.unidade, t.faixa_min, t.faixa_max
+           FROM item_rotina i
+           JOIN residente r ON r.id = i.residente_id
+           JOIN tipo_checkin t ON t.id = i.tipo_id
+           WHERE i.id = ?""",
+        (item_id,)
+    ).fetchone()
+
+# Indica se o item já tem registro no dia, de qualquer cuidador (RN-03)
+def ja_registrado_hoje(db, item_id, data_hoje):
+    return db.execute(
+        "SELECT id FROM checkin WHERE item_id = ? AND date(registrado_em) = ?",
+        (item_id, data_hoje)
+    ).fetchone() is not None
+
+# Converte o valor medido como a rota /medicao ("36,8" vira 36.8) e diz se está fora da faixa; ValueError se inválido
+def avaliar_medicao(item, valor_bruto):
+    if isinstance(valor_bruto, bool) or not isinstance(valor_bruto, (str, int, float)):
+        raise ValueError("valor inválido")
+    valor_float = float(str(valor_bruto).replace(",", ".").strip())
+    if not math.isfinite(valor_float):
+        raise ValueError("valor não finito")
+    min_val = item["faixa_min"]
+    max_val = item["faixa_max"]
+    esta_fora = (min_val is not None and valor_float < min_val) or (max_val is not None and valor_float > max_val)
+    return valor_float, esta_fora
+
+# Lê um campo de texto opcional do corpo: ausente ou null vira "", outro tipo devolve None
+def campo_texto(dados, nome):
+    valor = dados.get(nome)
+    if valor is None:
+        return ""
+    return valor if isinstance(valor, str) else None
+
+# Checagens comuns dos registros: sessão com turno aberto, JSON, item existente e ainda não registrado hoje
+def preparar_registro(item_id):
+    db = get_db()
+    recusa = exigir_turno_aberto(db) or exigir_json()
+    if recusa:
+        return None, None, recusa
+
+    dados = request.get_json(silent=True)
+    if not isinstance(dados, dict):
+        return None, None, (jsonify(erro="Envie os dados como um objeto JSON."), 400)
+
+    item = buscar_item(db, item_id)
+    if not item:
+        return None, None, (jsonify(erro="Item não encontrado."), 404)
+
+    if ja_registrado_hoje(db, item_id, date.today().isoformat()):
+        return None, None, (jsonify(erro="Este item já foi registrado hoje."), 409)
+
+    return item, dados, None
+
+# Registra uma tarefa realizada (inclui medicação e exercício, que no banco são tarefas)
+@app.route("/api/checkin/<int:item_id>", methods=["POST"])
+def api_checkin_tarefa(item_id):
+    item, dados, recusa = preparar_registro(item_id)
+    if recusa:
+        return recusa
+
+    if item["natureza"] == "medicao":
+        return jsonify(erro="Este item é uma medição."), 400
+
+    observacao = campo_texto(dados, "observacao")
+    if observacao is None:
+        return jsonify(erro="A observação deve ser texto."), 400
+
+    salvar_checkin(get_db(), item_id, session["turno_id"], session["cuidador_id"], "realizado", observacao=observacao)
+    return jsonify(status="feito"), 201
+
+# Registra uma medição com o alerta em duas etapas da rota /medicao (US-09, US-13)
+@app.route("/api/checkin/<int:item_id>/medicao", methods=["POST"])
+def api_checkin_medicao(item_id):
+    item, dados, recusa = preparar_registro(item_id)
+    if recusa:
+        return recusa
+
+    if item["natureza"] != "medicao":
+        return jsonify(erro="Este item não é uma medição."), 400
+
+    observacao = campo_texto(dados, "observacao")
+    confirmado = dados.get("confirmado", False)
+    if observacao is None or not isinstance(confirmado, bool):
+        return jsonify(erro="Observação deve ser texto e confirmado deve ser true ou false."), 400
+
+    try:
+        valor_float, esta_fora = avaliar_medicao(item, dados.get("valor"))
+    except ValueError:
+        return jsonify(erro="Informe o valor medido."), 400
+
+    # 1ª etapa: valor fora da faixa sem confirmação não grava nada, só pede para confirmar
+    if esta_fora and not confirmado:
+        return jsonify(registrado=False, alerta_fora=True), 200
+
+    salvar_checkin(
+        get_db(), item_id, session["turno_id"], session["cuidador_id"],
+        status="realizado",
+        valor=valor_float,
+        fora=1 if esta_fora else 0,
+        observacao=observacao
+    )
+    return jsonify(status="feito", fora_da_faixa=esta_fora), 201
+
+# Registra um item não realizado; o motivo precisa ser um dos aceitos pela rota HTML (US-11, RN-04)
+@app.route("/api/checkin/<int:item_id>/nao-realizado", methods=["POST"])
+def api_checkin_nao_realizado(item_id):
+    item, dados, recusa = preparar_registro(item_id)
+    if recusa:
+        return recusa
+
+    motivo = dados.get("motivo")
+    if not isinstance(motivo, str) or motivo not in MOTIVOS_NAO_REALIZADO:
+        return jsonify(erro="Escolha um motivo."), 400
+
+    observacao = campo_texto(dados, "observacao")
+    if observacao is None:
+        return jsonify(erro="A observação deve ser texto."), 400
+
+    salvar_checkin(
+        get_db(), item_id, session["turno_id"], session["cuidador_id"],
+        status="nao_realizado",
+        motivo=MOTIVOS_NAO_REALIZADO[motivo],
+        observacao=observacao
+    )
+    return jsonify(status="nao_realizado"), 201
+
+# Encerra o turno como a rota /turno/encerrar: grava passagem e pendências e limpa a sessão (US-03)
+@app.route("/api/turno/encerrar", methods=["POST"])
+def api_turno_encerrar():
+    db = get_db()
+    recusa = exigir_turno_aberto(db) or exigir_json()
+    if recusa:
+        return recusa
+
+    dados = request.get_json(silent=True)
+    if not isinstance(dados, dict):
+        return jsonify(erro="Envie os dados como um objeto JSON."), 400
+
+    passagem = campo_texto(dados, "passagem")
+    if passagem is None:
+        return jsonify(erro="A passagem deve ser texto."), 400
+    passagem = passagem.strip()
+
+    hora_atual = HORA_DEMO or "09:40"
+    data_hoje = date.today().isoformat()
+    pendentes = [i for i in itens_do_dia(db, data_hoje, hora_atual) if i["status_calculado"] in ["atrasado", "pendente"]]
+    linhas_pendencias = [f"{p['tipo']} — {p['residente']} ({p['horario']})" for p in pendentes]
+    agora_str = data_hoje + " " + hora_atual + ":00"
+
+    db.execute(
+        """UPDATE turno
+           SET encerrado_em = ?, passagem = ?, pendencias = ?
+           WHERE id = ? AND encerrado_em IS NULL""",
+        (agora_str, passagem, "\n".join(linhas_pendencias), session["turno_id"])
+    )
+    db.commit()
+
+    session.clear()
+    return jsonify(pendencias=linhas_pendencias), 200
 
 # Serve o build web do Flutter em /app/ (o Flask redireciona /app para /app/ sozinho); caminho desconhecido volta para o index.html
 @app.route("/app/")
