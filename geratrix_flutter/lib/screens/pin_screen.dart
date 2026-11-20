@@ -36,8 +36,8 @@ class _PinScreenState extends State<PinScreen> {
 
   void _validarPin() {
     final cuidador = ModalRoute.of(context)?.settings.arguments as Cuidador?;
-    // Aceita o PIN configurado no cuidador ou a senha genérica "1234"
-    if (_pin == '1234' || (cuidador != null && _pin == cuidador.pin)) {
+    // Aceita apenas o PIN do cuidador selecionado
+    if (cuidador != null && _pin == cuidador.pin) {
       Navigator.pushReplacementNamed(
         context,
         AppRoutes.abrirTurno,

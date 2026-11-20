@@ -1,6 +1,7 @@
 import sqlite3
 from pathlib import Path
 from datetime import datetime, timedelta
+from werkzeug.security import generate_password_hash
 
 # Cria, limpa e popula o banco de dados inicial para demonstração
 def semear():
@@ -15,9 +16,9 @@ def semear():
         cursor.executescript(f.read())
 
     cuidadores = [
-        (1, "Theo Casella Mendonça", "TCM", "Manhã", "1234", 1),
-        (2, "Enzo Senatori", "ES", "Tarde", "1234", 1),
-        (3, "Rafael de Oliveira Corrêa", "RC", "Noite", "1234", 1)
+        (1, "Theo Casella Mendonça", "TCM", "Manhã", generate_password_hash("1234"), 1),
+        (2, "Enzo Senatori", "ES", "Tarde", generate_password_hash("1234"), 1),
+        (3, "Rafael de Oliveira Corrêa", "RC", "Noite", generate_password_hash("1234"), 1)
     ]
     cursor.executemany("INSERT INTO cuidador (id, nome, iniciais, turno_padrao, pin, ativo) VALUES (?, ?, ?, ?, ?, ?)", cuidadores)
 
