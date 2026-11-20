@@ -1,2 +1,4 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+# Build web do Flutter: copiado como está, sem conversão de fim de linha
+backend/flutter_web/** -text
