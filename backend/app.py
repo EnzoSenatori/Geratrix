@@ -1,3 +1,5 @@
+import os
+import secrets
 import sqlite3
 from pathlib import Path
 from flask import Flask, render_template, g
@@ -6,7 +8,8 @@ PASTA = Path(__file__).parent
 BANCO = PASTA / "geratrix.db"
 
 app = Flask(__name__, static_folder="css", static_url_path="/css")
-app.secret_key = "geratrix-mvp-v0"
+# OWASP A01: a chave que assina a sessão vem do ambiente (Azure), nunca do código
+app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
 
 # Cria o banco de dados se ele não existir
 if not BANCO.exists():
