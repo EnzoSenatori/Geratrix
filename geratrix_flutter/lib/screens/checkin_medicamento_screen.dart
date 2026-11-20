@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/item_rotina.dart';
 import '../routes.dart';
+import 'erro_screen.dart';
 
 // Tela de confirmação e registro de administração de medicamentos prescritos
 class CheckinMedicamentoScreen extends StatefulWidget {
@@ -22,24 +23,36 @@ class _CheckinMedicamentoScreenState extends State<CheckinMedicamentoScreen> {
     super.dispose();
   }
 
+  // Registra a administração do medicamento e devolve 'feito' para a lista
   void _confirmarAdministracao() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Administração de medicamento registrada!')),
     );
-    Navigator.pop(context);
+    Navigator.pop(context, 'feito');
   }
 
-  void _registrarNaoRealizado(ItemRotina item) {
-    Navigator.pushNamed(
+  // Abre a tela de "não realizado" e repassa o resultado se confirmado
+  Future<void> _registrarNaoRealizado(ItemRotina item) async {
+    final resultado = await Navigator.pushNamed(
       context,
       AppRoutes.naoRealizado,
       arguments: item,
     );
+    if (!mounted || resultado == null) return;
+    Navigator.pop(context, resultado);
   }
 
   @override
   Widget build(BuildContext context) {
-    final item = ModalRoute.of(context)!.settings.arguments as ItemRotina;
+    final item = ModalRoute.of(context)?.settings.arguments as ItemRotina?;
+
+    // Proteção contra F5 / acesso direto sem item de rotina
+    if (item == null) {
+      return const ErroScreen(
+        mensagem: 'Esta tela abre a partir do início do app.',
+      );
+    }
+
     final cores = Theme.of(context).colorScheme;
     final textos = Theme.of(context).textTheme;
 
@@ -67,10 +80,26 @@ class _CheckinMedicamentoScreenState extends State<CheckinMedicamentoScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${item.residente} • Horário: ${item.horario}',
+                    '${item.residente.nome} • Horário: ${item.horario}',
                     style: textos.bodyLarge?.copyWith(color: cores.onSurfaceVariant),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 8),
+                  // Botão de atalho para abrir o Prontuário Rápido do Residente
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: () {
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.residente,
+                          arguments: item.residente,
+                        );
+                      },
+                      icon: const Icon(Icons.badge_outlined, size: 20),
+                      label: const Text('Ver prontuário'),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
 
                   // Card de Detalhes da Prescrição
                   Card(
@@ -81,11 +110,11 @@ class _CheckinMedicamentoScreenState extends State<CheckinMedicamentoScreen> {
                         children: [
                           Row(
                             children: [
-                              Icon(Icons.medication_rounded, color: cores.primary, size: 24),
+                              Icon(Icons.medication_rounded, color: cores.secondary, size: 24),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
-                                  item.tipo, // Ex: "Medicação: Losartana 50mg"
+                                  item.tipo,
                                   style: textos.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                                 ),
                               ),

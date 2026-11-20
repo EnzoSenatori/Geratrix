@@ -1,15 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../models/cuidador.dart';
+import '../dados/dados_exemplo.dart';
 import '../routes.dart';
-
-// Lista de cuidadores (incluindo uma inativa para exemplo visual)
-const _cuidadores = [
-  Cuidador(nome: 'Theo Casella Mendonça', iniciais: 'TCM', turnoPadrao: 'Manhã', pin: '1234', ativo: true),
-  Cuidador(nome: 'Enzo Senatori', iniciais: 'ES', turnoPadrao: 'Tarde', pin: '1234', ativo: true),
-  Cuidador(nome: 'Rafael de Oliveira Corrêa', iniciais: 'RC', turnoPadrao: 'Noite', pin: '1234', ativo: true),
-  Cuidador(nome: 'Maria da Silva', iniciais: 'MS', turnoPadrao: 'Folga', pin: '0000', ativo: false),
-];
 
 // Painel do Gestor: visualização do status da equipe e acesso a relatórios
 class GestorScreen extends StatelessWidget {
@@ -54,15 +46,15 @@ class GestorScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            // Expanded faz a lista ocupar todo o espaço restante da tela
+            // Lista com todos os cuidadores (ativos e inativos)
             Expanded(
               child: ListView.separated(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-                itemCount: _cuidadores.length,
+                itemCount: cuidadores.length,
                 separatorBuilder: (context, index) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
-                  final cuidador = _cuidadores[index];
-                  
+                  final cuidador = cuidadores[index];
+
                   return Card(
                     clipBehavior: Clip.antiAlias,
                     child: ListTile(
@@ -90,7 +82,7 @@ class GestorScreen extends StatelessWidget {
                         ),
                         backgroundColor: cuidador.ativo ? cores.primaryContainer : cores.errorContainer,
                         side: BorderSide.none,
-                        shape: const StadiumBorder(), // Formato de pílula
+                        shape: const StadiumBorder(),
                       ),
                     ),
                   );
