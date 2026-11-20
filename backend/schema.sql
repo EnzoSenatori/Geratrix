@@ -1,5 +1,6 @@
 -- Geratrix MVP de apresentação (v0)
 -- Rodar este arquivo apaga e recria o banco inteiro.
+DROP TABLE IF EXISTS tentativa_pin;
 DROP TABLE IF EXISTS checkin;
 DROP TABLE IF EXISTS turno;
 DROP TABLE IF EXISTS item_rotina;

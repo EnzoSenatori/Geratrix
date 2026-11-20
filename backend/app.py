@@ -3,6 +3,8 @@ import secrets
 import sqlite3
 from pathlib import Path
 from flask import Flask, render_template, g
+from datetime import datetime, timedelta
+from werkzeug.security import generate_password_hash, check_password_hash
 
 PASTA = Path(__file__).parent
 BANCO = PASTA / "geratrix.db"
@@ -22,6 +24,28 @@ app.config.update(
 if not BANCO.exists():
     from seed import semear
     semear()
+
+# OWASP A07: limite de tentativas erradas de PIN e tempo de bloqueio
+MAX_TENTATIVAS = 5
+MINUTOS_BLOQUEIO = 5
+
+# Prepara o banco para a A07: cria a tabela de tentativas e troca PINs em texto puro por hash
+def proteger_pins():
+    conexao = sqlite3.connect(BANCO)
+    conexao.execute("""
+        CREATE TABLE IF NOT EXISTS tentativa_pin (
+            cuidador_id INTEGER PRIMARY KEY REFERENCES cuidador(id),
+            falhas INTEGER NOT NULL DEFAULT 0,
+            bloqueado_ate TEXT
+        )
+    """)
+    for cuidador_id, pin in conexao.execute("SELECT id, pin FROM cuidador").fetchall():
+        if not pin.startswith(("scrypt:", "pbkdf2:")):
+            conexao.execute("UPDATE cuidador SET pin = ? WHERE id = ?", (generate_password_hash(pin), cuidador_id))
+    conexao.commit()
+    conexao.close()
+
+proteger_pins()
 
 # Relógio virtual para a demonstração
 HORA_DEMO = "09:40"
@@ -63,6 +87,34 @@ def index():
     cuidadores = db.execute("SELECT * FROM cuidador WHERE ativo = 1").fetchall()
     return render_template("index.html", cuidadores=cuidadores)
 
+# Devolve quantos minutos faltam para acabar o bloqueio do cuidador (0 = não está bloqueado)
+def minutos_de_bloqueio(db, cuidador_id):
+    linha = db.execute("SELECT bloqueado_ate FROM tentativa_pin WHERE cuidador_id = ?", (cuidador_id,)).fetchone()
+    if not linha or not linha["bloqueado_ate"]:
+        return 0
+    restante = datetime.fromisoformat(linha["bloqueado_ate"]) - datetime.now()
+    if restante.total_seconds() <= 0:
+        return 0
+    return int(restante.total_seconds() // 60) + 1
+
+# Soma uma tentativa errada; na quinta seguida, bloqueia o cuidador. Devolve quantas tentativas ainda restam
+def registrar_falha(db, cuidador_id):
+    db.execute("INSERT OR IGNORE INTO tentativa_pin (cuidador_id) VALUES (?)", (cuidador_id,))
+    db.execute("UPDATE tentativa_pin SET falhas = falhas + 1 WHERE cuidador_id = ?", (cuidador_id,))
+    falhas = db.execute("SELECT falhas FROM tentativa_pin WHERE cuidador_id = ?", (cuidador_id,)).fetchone()["falhas"]
+    if falhas >= MAX_TENTATIVAS:
+        fim = (datetime.now() + timedelta(minutes=MINUTOS_BLOQUEIO)).strftime("%Y-%m-%d %H:%M:%S")
+        db.execute("UPDATE tentativa_pin SET falhas = 0, bloqueado_ate = ? WHERE cuidador_id = ?", (fim, cuidador_id))
+        db.commit()
+        return 0
+    db.commit()
+    return MAX_TENTATIVAS - falhas
+
+# Zera as tentativas erradas do cuidador depois de um login certo
+def zerar_tentativas(db, cuidador_id):
+    db.execute("UPDATE tentativa_pin SET falhas = 0, bloqueado_ate = NULL WHERE cuidador_id = ?", (cuidador_id,))
+    db.commit()
+
 # Rota de login por PIN do cuidador
 @app.route("/pin/<int:id>", methods=["GET", "POST"])
 def pin(id):
@@ -89,7 +141,12 @@ def pin(id):
         elif tecla == "apagar":
             pin_atual = pin_atual[:-1]
         elif tecla == "entrar":
-            if pin_atual == cuidador["pin"]:
+            bloqueio = minutos_de_bloqueio(db, id)
+            if bloqueio > 0:
+                erro = f"Acesso bloqueado por excesso de tentativas. Tente novamente em {bloqueio} min."
+                pin_atual = ""
+            elif check_password_hash(cuidador["pin"], pin_atual):
+                zerar_tentativas(db, id)
                 session.clear()
                 session["cuidador_id"] = id
                 
@@ -105,7 +162,11 @@ def pin(id):
                 else:
                     return redirect("/turno/abrir")
             else:
-                erro = "PIN incorreto. Tente novamente."
+                restantes = registrar_falha(db, id)
+                if restantes == 0:
+                    erro = f"PIN incorreto. Acesso bloqueado por {MINUTOS_BLOQUEIO} minutos."
+                else:
+                    erro = f"PIN incorreto. Restam {restantes} tentativa(s)."
                 pin_atual = ""
 
         session["pin"] = pin_atual
