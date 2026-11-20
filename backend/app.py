@@ -1,3 +1,5 @@
+import os
+import secrets
 import sqlite3
 from pathlib import Path
 from flask import Flask, render_template, g
@@ -6,7 +8,15 @@ PASTA = Path(__file__).parent
 BANCO = PASTA / "geratrix.db"
 
 app = Flask(__name__, static_folder="css", static_url_path="/css")
-app.secret_key = "geratrix-mvp-v0"
+# OWASP A01: a chave que assina a sessão vem do ambiente (Azure), nunca do código
+app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
+
+# Cookie de sessão fora do alcance de scripts e de outros sites; expira após 15 min sem uso
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    PERMANENT_SESSION_LIFETIME=15 * 60,  # 15 minutos, em segundos
+)
 
 # Cria o banco de dados se ele não existir
 if not BANCO.exists():
@@ -39,6 +49,12 @@ def numero_filter(valor):
     if float(valor).is_integer():
         return f"{int(valor)}"
     return f"{valor}".replace(".", ",")
+
+# Marca toda sessão como temporária: cada acesso renova os 15 minutos de validade
+@app.before_request
+def sessao_com_validade():
+    from flask import session
+    session.permanent = True
 
 # Rota principal que lista os cuidadores ativos
 @app.route("/")
