@@ -17,6 +17,17 @@ class ErroApi implements Exception {
 
   // 429 = cuidador bloqueado por excesso de tentativas (OWASP A07)
   bool get bloqueado => status == 429;
+
+  // 409 = item já registrado hoje (por este ou outro cuidador); a lista precisa recarregar
+  bool get jaRegistrado => status == 409;
+}
+
+// Resposta do registro de medição: gravado, ou parado na 1ª etapa pedindo confirmação do valor fora da faixa
+class ResultadoMedicao {
+  final bool registrado;
+  final bool foraDaFaixa;
+
+  const ResultadoMedicao({required this.registrado, required this.foraDaFaixa});
 }
 
 // Resposta do login: quem entrou e se já existe um turno aberto para ele
@@ -87,6 +98,54 @@ class Api {
     final corpo = _tratar(await http.get(_url('/api/lista'))) as Map<String, dynamic>;
     final itens = corpo['itens'] as List<dynamic>;
     return itens.map((i) => ItemRotina.deJson(i as Map<String, dynamic>)).toList();
+  }
+
+  // Caminho do item na API; o id vem da própria API, mas vai codificado por segurança
+  static String _item(String itemId) => '/api/checkin/${Uri.encodeComponent(itemId)}';
+
+  // POST /api/checkin/<id>: tarefa realizada (também medicação e exercício, que no banco são tarefas)
+  static Future<void> registrarTarefa(String itemId, String observacao) async {
+    _tratar(await http.post(
+      _url(_item(itemId)),
+      headers: _json,
+      body: jsonEncode({'observacao': observacao}),
+    ));
+  }
+
+  // POST /api/checkin/<id>/medicao: o backend decide se o valor está fora da faixa e pede confirmação
+  static Future<ResultadoMedicao> registrarMedicao(
+    String itemId,
+    String valor,
+    String observacao,
+    bool confirmado,
+  ) async {
+    final corpo = _tratar(await http.post(
+      _url('${_item(itemId)}/medicao'),
+      headers: _json,
+      body: jsonEncode({'valor': valor, 'observacao': observacao, 'confirmado': confirmado}),
+    )) as Map<String, dynamic>;
+    return ResultadoMedicao(
+      registrado: corpo['registrado'] != false,
+      foraDaFaixa: corpo['fora_da_faixa'] == true || corpo['alerta_fora'] == true,
+    );
+  }
+
+  // POST /api/checkin/<id>/nao-realizado: motivo é a chave aceita pelo backend (ex.: 'dormindo')
+  static Future<void> registrarNaoRealizado(String itemId, String motivo, String observacao) async {
+    _tratar(await http.post(
+      _url('${_item(itemId)}/nao-realizado'),
+      headers: _json,
+      body: jsonEncode({'motivo': motivo, 'observacao': observacao}),
+    ));
+  }
+
+  // POST /api/turno/encerrar: fecha o turno no banco com a passagem; o backend limpa a sessão
+  static Future<void> encerrarTurno(String passagem) async {
+    _tratar(await http.post(
+      _url('/api/turno/encerrar'),
+      headers: _json,
+      body: jsonEncode({'passagem': passagem}),
+    ));
   }
 
   // POST /api/sair: limpa a sessão no backend sem encerrar o turno

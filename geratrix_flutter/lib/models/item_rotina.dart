@@ -68,19 +68,4 @@ class ItemRotina {
 
   // Indica se o item já tem registro no turno, feito ou não realizado, como no backend
   bool get registrado => status == 'feito' || status == 'nao_realizado';
-
-  // Cria uma cópia com outro status; o model é imutável, então a lista troca o item inteiro
-  ItemRotina comStatus(String novoStatus) {
-    return ItemRotina(
-      id: id,
-      horario: horario,
-      tipo: tipo,
-      natureza: natureza,
-      residente: residente,
-      status: novoStatus,
-      unidade: unidade,
-      faixaMin: faixaMin,
-      faixaMax: faixaMax,
-    );
-  }
 }

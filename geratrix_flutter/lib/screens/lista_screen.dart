@@ -16,7 +16,7 @@ class ListaScreen extends StatefulWidget {
 class _ListaScreenState extends State<ListaScreen> {
   String _filtroAtual = 'Todos';
 
-  // Itens do turno vindos do backend; os registros feitos nas telas seguintes ficam só nesta cópia (fase 1)
+  // Itens do turno vindos do backend; recarregados depois de cada registro
   List<ItemRotina> _itens = [];
   bool _carregando = true;
   bool _falhou = false;
@@ -64,7 +64,7 @@ class _ListaScreenState extends State<ListaScreen> {
     Navigator.pushNamedAndRemoveUntil(context, AppRoutes.index, (route) => false);
   }
 
-  // Abre a tela de registro adequada e atualiza o estado com o retorno
+  // Abre a tela de registro adequada; se ela gravou algo (ou o item já estava registrado), recarrega a lista da API
   Future<void> _abrirRegistro(ItemRotina item) async {
     String rota = AppRoutes.checkin;
     if (item.natureza == 'medicao') rota = AppRoutes.checkinSinaisVitais;
@@ -72,14 +72,8 @@ class _ListaScreenState extends State<ListaScreen> {
     if (item.natureza == 'exercicio') rota = AppRoutes.exercicio;
 
     final resultado = await Navigator.pushNamed(context, rota, arguments: item);
-    if (!mounted || resultado is! String) return;
-
-    setState(() {
-      final indice = _itens.indexWhere((i) => i.id == item.id);
-      if (indice != -1) {
-        _itens[indice] = item.comStatus(resultado);
-      }
-    });
+    if (!mounted || resultado != true) return;
+    await _carregar();
   }
 
   Widget _montarFiltro(String rotulo, ColorScheme cores) {
