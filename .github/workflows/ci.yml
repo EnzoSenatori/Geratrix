@@ -1,5 +1,5 @@
 # CI/CD do Geratrix: testes da API, provas OWASP (A01, A08) e build do Flutter web;
-# depois que tudo passa, publica no Azure App Service (só push na main, workflow_dispatch e, temporariamente, a tcm)
+# depois que tudo passa, publica no Azure App Service (só push na main ou workflow_dispatch na main)
 name: CI
 
 on:
@@ -75,12 +75,12 @@ jobs:
 
       # Só quando a execução vai publicar (mesma condição do job deploy): tira o canvaskit (vem do CDN) e o .last_build_id
       - name: Preparar build para o deploy
-        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/tcm/flutter-backend')
+        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
         run: rm -rf build/web/canvaskit build/web/.last_build_id
 
       # Entrega ao job deploy exatamente o build que passou no analyze
       - name: Guardar build web
-        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/tcm/flutter-backend')
+        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v7
         with:
           name: flutter-web
@@ -93,8 +93,8 @@ jobs:
   deploy:
     name: Deploy no Azure
     needs: [backend, flutter]
-    # PR nunca publica. TEMPORÁRIO: a tcm/flutter-backend publica só para validar o CD; tirar depois (aqui e no job flutter)
-    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/tcm/flutter-backend')
+    # Só a main publica (push ou workflow_dispatch); PR nunca publica
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
