@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../models/item_rotina.dart';
 import '../routes.dart';
+import '../services/api.dart';
+import '../services/registro.dart';
 import 'erro_screen.dart';
 
 // Tela de confirmação e registro de administração de medicamentos prescritos
@@ -16,6 +18,7 @@ class _CheckinMedicamentoScreenState extends State<CheckinMedicamentoScreen> {
   final _observacaoController = TextEditingController();
   // Confirmação de conferência de dosagem
   bool _dosagemConferida = false;
+  bool _enviando = false; // trava o botão enquanto a API grava
 
   @override
   void dispose() {
@@ -23,12 +26,20 @@ class _CheckinMedicamentoScreenState extends State<CheckinMedicamentoScreen> {
     super.dispose();
   }
 
-  // Registra a administração do medicamento e devolve 'feito' para a lista
-  void _confirmarAdministracao() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Administração de medicamento registrada!')),
+  // Grava a administração no banco (no backend é uma tarefa) e volta pedindo para a lista recarregar
+  Future<void> _confirmarAdministracao(ItemRotina item) async {
+    setState(() => _enviando = true);
+    final fechar = await enviarRegistro(
+      context,
+      () => Api.registrarTarefa(item.id, _observacaoController.text),
+      'Administração de medicamento registrada!',
     );
-    Navigator.pop(context, 'feito');
+    if (!mounted) return;
+    if (fechar) {
+      Navigator.pop(context, true);
+    } else {
+      setState(() => _enviando = false);
+    }
   }
 
   // Abre a tela de "não realizado" e repassa o resultado se confirmado
@@ -182,7 +193,7 @@ class _CheckinMedicamentoScreenState extends State<CheckinMedicamentoScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   FilledButton.icon(
-                    onPressed: _dosagemConferida ? _confirmarAdministracao : null,
+                    onPressed: _dosagemConferida && !_enviando ? () => _confirmarAdministracao(item) : null,
                     icon: const Icon(Icons.check_circle_rounded),
                     label: const Text('Confirmar administração'),
                   ),

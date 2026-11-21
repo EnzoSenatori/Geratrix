@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../models/item_rotina.dart';
 import '../routes.dart';
+import '../services/api.dart';
+import '../services/registro.dart';
 import 'erro_screen.dart';
 
 // Tela de Check-in genérico para tarefas cotidianas
@@ -14,6 +16,7 @@ class CheckinTarefaScreen extends StatefulWidget {
 
 class _CheckinTarefaScreenState extends State<CheckinTarefaScreen> {
   final _observacaoController = TextEditingController();
+  bool _enviando = false; // trava o botão enquanto a API grava
 
   @override
   void dispose() {
@@ -21,12 +24,20 @@ class _CheckinTarefaScreenState extends State<CheckinTarefaScreen> {
     super.dispose();
   }
 
-  // Registra a conclusão da tarefa e devolve 'feito' para a lista
-  void _salvarTarefa() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Tarefa registrada com sucesso!')),
+  // Grava a tarefa no banco pela API e, se deu certo (ou já estava registrada), volta pedindo para a lista recarregar
+  Future<void> _salvarTarefa(ItemRotina item) async {
+    setState(() => _enviando = true);
+    final fechar = await enviarRegistro(
+      context,
+      () => Api.registrarTarefa(item.id, _observacaoController.text),
+      'Tarefa registrada com sucesso!',
     );
-    Navigator.pop(context, 'feito');
+    if (!mounted) return;
+    if (fechar) {
+      Navigator.pop(context, true);
+    } else {
+      setState(() => _enviando = false);
+    }
   }
 
   // Abre a tela de "não realizado" e repassa o resultado para a lista se confirmado
@@ -124,7 +135,7 @@ class _CheckinTarefaScreenState extends State<CheckinTarefaScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   FilledButton.icon(
-                    onPressed: _salvarTarefa,
+                    onPressed: _enviando ? null : () => _salvarTarefa(item),
                     icon: const Icon(Icons.check_circle_rounded),
                     label: const Text('Concluir tarefa'),
                   ),

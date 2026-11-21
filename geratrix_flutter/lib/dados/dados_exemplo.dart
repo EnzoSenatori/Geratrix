@@ -47,12 +47,20 @@ const terezinhaLima = Residente(
   observacoesMedicas: 'Cuidados gerais de rotina.',
 );
 
-// Cuidadores cadastrados
+// Residentes por id, igual ao seed.py: a lista da API traz o residente_id e o app busca aqui o prontuário
+const residentesPorId = {
+  '1': mariaDasGracas,
+  '2': antonioFerreira,
+  '3': joseAugusto,
+  '4': terezinhaLima,
+};
+
+// Cuidadores cadastrados (só para a tela do gestor; a tela de perfis lê da API). Sem PIN: ele fica só no backend
 const cuidadores = [
-  Cuidador(nome: 'Theo Casella Mendonça', iniciais: 'TCM', turnoPadrao: 'Manhã', pin: '1234', ativo: true),
-  Cuidador(nome: 'Enzo Senatori', iniciais: 'ES', turnoPadrao: 'Tarde', pin: '1234', ativo: true),
-  Cuidador(nome: 'Rafael de Oliveira Corrêa', iniciais: 'RC', turnoPadrao: 'Noite', pin: '1234', ativo: true),
-  Cuidador(nome: 'Maria da Silva', iniciais: 'MS', turnoPadrao: 'Folga', pin: '0000', ativo: false),
+  Cuidador(id: 1, nome: 'Theo Casella Mendonça', iniciais: 'TCM', turnoPadrao: 'Manhã', ativo: true),
+  Cuidador(id: 2, nome: 'Enzo Senatori', iniciais: 'ES', turnoPadrao: 'Tarde', ativo: true),
+  Cuidador(id: 3, nome: 'Rafael de Oliveira Corrêa', iniciais: 'RC', turnoPadrao: 'Noite', ativo: true),
+  Cuidador(id: 4, nome: 'Maria da Silva', iniciais: 'MS', turnoPadrao: 'Folga', ativo: false),
 ];
 
 // Rotina do dia, igual ao seed.py; status calculado como no backend, com a hora de demonstração 09:40

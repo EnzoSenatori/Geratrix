@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../models/item_rotina.dart';
 import '../routes.dart';
+import '../services/api.dart';
+import '../services/sessao_expirada.dart';
 import 'erro_screen.dart';
 
 // Tela de medição de sinais vitais e parâmetros de saúde com alerta em duas etapas
@@ -17,6 +19,7 @@ class _CheckinSinaisVitaisScreenState extends State<CheckinSinaisVitaisScreen> {
   final _observacaoController = TextEditingController();
 
   bool _confirmandoForaDaFaixa = false;
+  bool _enviando = false; // trava o botão enquanto a API responde
   String? _erro;
 
   @override
@@ -26,30 +29,58 @@ class _CheckinSinaisVitaisScreenState extends State<CheckinSinaisVitaisScreen> {
     super.dispose();
   }
 
-  // Valida o valor e aplica o alerta em duas etapas do backend (US-13)
-  void _salvarMedicao(ItemRotina item) {
-    final valor = double.tryParse(_valorController.text.replaceAll(',', '.'));
-    if (valor == null) {
-      setState(() => _erro = 'Informe o valor medido.');
-      return;
-    }
+  // Envia a medição; o backend aplica a faixa e o alerta em duas etapas (US-13), como na rota HTML
+  Future<void> _salvarMedicao(ItemRotina item) async {
+    final mensageiro = ScaffoldMessenger.of(context);
+    setState(() {
+      _enviando = true;
+      _erro = null;
+    });
 
-    final min = item.faixaMin;
-    final max = item.faixaMax;
-    final foraDaFaixa = (min != null && valor < min) || (max != null && valor > max);
+    try {
+      final resultado = await Api.registrarMedicao(
+        item.id,
+        _valorController.text,
+        _observacaoController.text,
+        _confirmandoForaDaFaixa,
+      );
+      if (!mounted) return;
 
-    if (foraDaFaixa && !_confirmandoForaDaFaixa) {
+      // 1ª etapa: fora da faixa e ainda não confirmado; nada foi gravado
+      if (!resultado.registrado) {
+        setState(() {
+          _confirmandoForaDaFaixa = true;
+          _enviando = false;
+        });
+        return;
+      }
+
+      mensageiro.showSnackBar(SnackBar(
+        content: Text(resultado.foraDaFaixa
+            ? 'Medição fora da faixa registrada.'
+            : 'Medição registrada com sucesso!'),
+      ));
+      Navigator.pop(context, true);
+    } on SessaoExpirada {
+      if (mounted) voltarParaPerfis(context);
+    } on ErroApi catch (erro) {
+      if (!mounted) return;
+      if (erro.jaRegistrado) {
+        mensageiro.showSnackBar(SnackBar(content: Text(erro.mensagem)));
+        Navigator.pop(context, true);
+        return;
+      }
       setState(() {
-        _erro = null;
-        _confirmandoForaDaFaixa = true; // 1ª etapa: mostra o alerta
+        _erro = erro.mensagem; // ex.: "Informe o valor medido."
+        _enviando = false;
       });
-      return;
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _enviando = false);
+      mensageiro.showSnackBar(
+        const SnackBar(content: Text('Não foi possível falar com o servidor. Tente novamente.')),
+      );
     }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Medição registrada com sucesso!')),
-    );
-    Navigator.pop(context, 'feito'); // 2ª etapa, ou valor dentro da faixa
   }
 
   // Abre a tela de "não realizado" e repassa o resultado se confirmado
@@ -201,7 +232,7 @@ class _CheckinSinaisVitaisScreenState extends State<CheckinSinaisVitaisScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   FilledButton.icon(
-                    onPressed: () => _salvarMedicao(item),
+                    onPressed: _enviando ? null : () => _salvarMedicao(item),
                     icon: Icon(_confirmandoForaDaFaixa ? Icons.warning_rounded : Icons.check_circle_rounded),
                     label: Text(_confirmandoForaDaFaixa ? 'Confirmar valor fora da faixa' : 'Salvar medição'),
                   ),

@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../models/estado_caneleira.dart';
+import '../models/item_rotina.dart';
 import '../models/prescricao.dart';
 import '../models/sessao_exercicio.dart';
+import '../routes.dart';
+import '../services/api.dart';
 import '../services/caneleira_mqtt.dart';
+import '../services/registro.dart';
 import '../widgets/caneleira_card.dart';
 import '../widgets/serie_tile.dart';
 
@@ -29,6 +33,7 @@ class _ExercicioScreenState extends State<ExercicioScreen> {
   final _sessoes = <String, SessaoExercicio>{}; // por sid, na ordem em que chegaram
   String? _sidAtual; // sessão iniciada por esta tela
   DateTime? _enviadaEm;
+  bool _enviando = false; // trava os botões de registro enquanto a API grava
 
   @override
   void initState() {
@@ -75,6 +80,34 @@ class _ExercicioScreenState extends State<ExercicioScreen> {
       _sidAtual = prescricao.sid;
       _enviadaEm = DateTime.now();
     });
+  }
+
+  // Grava o exercício como tarefa realizada; a observação leva o resumo da caneleira, se houver sessão concluída
+  Future<void> _concluirExercicio(ItemRotina item) async {
+    final concluidas = _sessoes.values.where((sessao) => sessao.concluida).toList();
+    final observacao = concluidas.isEmpty
+        ? ''
+        : 'Caneleira: ${concluidas.last.series.length} série(s) concluída(s).';
+
+    setState(() => _enviando = true);
+    final fechar = await enviarRegistro(
+      context,
+      () => Api.registrarTarefa(item.id, observacao),
+      'Exercício registrado com sucesso!',
+    );
+    if (!mounted) return;
+    if (fechar) {
+      Navigator.pop(context, true);
+    } else {
+      setState(() => _enviando = false);
+    }
+  }
+
+  // Abre a tela de "não realizado" e, se gravou, volta para a lista pedindo para recarregar
+  Future<void> _registrarNaoRealizado(ItemRotina item) async {
+    final resultado = await Navigator.pushNamed(context, AppRoutes.naoRealizado, arguments: item);
+    if (!mounted || resultado == null) return;
+    Navigator.pop(context, resultado);
   }
 
   // Formata a hora como no mockup ("10:02")
@@ -141,6 +174,8 @@ class _ExercicioScreenState extends State<ExercicioScreen> {
     final emAndamento = (_sidAtual != null && sessaoAtual == null) ||
         _sessoes.values.any((sessao) => !sessao.concluida);
     final podeEnviar = _conectado && _estado.online && !emAndamento;
+    // Aberta pela lista do turno recebe o item; aberta pelo main_caneleira.dart não tem item e não registra
+    final item = ModalRoute.of(context)?.settings.arguments as ItemRotina?;
 
     return Scaffold(
       appBar: AppBar(), // botão de voltar quando a tela abre pela lista do app
@@ -224,6 +259,21 @@ class _ExercicioScreenState extends State<ExercicioScreen> {
                   ),
                 ),
               ],
+            // Registro do item no turno (só quando a tela veio da lista)
+            if (item != null) ...[
+              const SizedBox(height: 32),
+              FilledButton.icon(
+                onPressed: _enviando ? null : () => _concluirExercicio(item),
+                icon: const Icon(Icons.check_circle_rounded),
+                label: const Text('Concluir exercício'),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: _enviando ? null : () => _registrarNaoRealizado(item),
+                style: TextButton.styleFrom(foregroundColor: cores.error),
+                child: const Text('Não foi possível realizar'),
+              ),
+            ],
           ],
         ),
       ),

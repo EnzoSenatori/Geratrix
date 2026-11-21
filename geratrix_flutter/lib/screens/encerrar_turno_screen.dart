@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../models/item_rotina.dart';
 import '../routes.dart';
+import '../services/api.dart';
+import '../services/sessao_expirada.dart';
 import 'erro_screen.dart';
 
 // Tela de Encerramento de Turno: resumo das atividades, pendências e passagem de plantão
@@ -14,6 +16,7 @@ class EncerrarTurnoScreen extends StatefulWidget {
 
 class _EncerrarTurnoScreenState extends State<EncerrarTurnoScreen> {
   final _passagemController = TextEditingController();
+  bool _enviando = false; // trava o botão enquanto a API fecha o turno
 
   @override
   void dispose() {
@@ -21,15 +24,32 @@ class _EncerrarTurnoScreenState extends State<EncerrarTurnoScreen> {
     super.dispose();
   }
 
-  void _encerrarPlantao() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Plantão encerrado com sucesso!')),
-    );
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      AppRoutes.index,
-      (route) => false,
-    );
+  // Fecha o turno no banco com a passagem (o backend gera as pendências e limpa a sessão) e volta aos perfis
+  Future<void> _encerrarPlantao() async {
+    final mensageiro = ScaffoldMessenger.of(context);
+    setState(() => _enviando = true);
+    try {
+      await Api.encerrarTurno(_passagemController.text);
+      if (!mounted) return;
+      mensageiro.showSnackBar(
+        const SnackBar(content: Text('Plantão encerrado com sucesso!')),
+      );
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.index,
+        (route) => false,
+      );
+    } on SessaoExpirada {
+      if (mounted) voltarParaPerfis(context);
+    } catch (erro) {
+      if (!mounted) return;
+      setState(() => _enviando = false);
+      mensageiro.showSnackBar(SnackBar(
+        content: Text(erro is ErroApi
+            ? erro.mensagem
+            : 'Não foi possível encerrar o turno. Tente novamente.'),
+      ));
+    }
   }
 
   @override
@@ -208,7 +228,7 @@ class _EncerrarTurnoScreenState extends State<EncerrarTurnoScreen> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: FilledButton.icon(
-                onPressed: _encerrarPlantao,
+                onPressed: _enviando ? null : _encerrarPlantao,
                 icon: const Icon(Icons.check_circle_outline_rounded),
                 label: const Text('Finalizar e fechar turno'),
               ),

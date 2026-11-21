@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 
 import '../models/item_rotina.dart';
+import '../services/api.dart';
+import '../services/registro.dart';
 import 'erro_screen.dart';
 
-// Motivos homologados no backend conforme RN-04
-const _motivosNaoRealizado = [
-  'Recusa do residente',
-  'Residente dormindo',
-  'Material indisponível',
-  'Emergência',
-];
+// Motivos aceitos pelo backend (RN-04): chave enviada à API -> texto mostrado no chip
+const _motivosNaoRealizado = {
+  'recusa': 'Recusa do residente',
+  'dormindo': 'Residente dormindo',
+  'material-indisponivel': 'Material indisponível',
+  'emergencia': 'Emergência',
+};
 
 // Tela de registro de exceção / não realização de tarefa
 class NaoRealizadoScreen extends StatefulWidget {
@@ -20,7 +22,8 @@ class NaoRealizadoScreen extends StatefulWidget {
 }
 
 class _NaoRealizadoScreenState extends State<NaoRealizadoScreen> {
-  String? _motivoSelecionado;
+  String? _motivoSelecionado; // chave do motivo (ex.: 'dormindo')
+  bool _enviando = false; // trava o botão enquanto a API grava
   final _justificativaController = TextEditingController();
 
   @override
@@ -29,12 +32,20 @@ class _NaoRealizadoScreenState extends State<NaoRealizadoScreen> {
     super.dispose();
   }
 
-  // Devolve o resultado 'nao_realizado' para a tela anterior
-  void _confirmar() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Registro de não realização gravado!')),
+  // Grava o não realizado no banco e devolve true para a tela anterior, que volta à lista recarregando
+  Future<void> _confirmar(ItemRotina item, String motivo) async {
+    setState(() => _enviando = true);
+    final fechar = await enviarRegistro(
+      context,
+      () => Api.registrarNaoRealizado(item.id, motivo, _justificativaController.text),
+      'Registro de não realização gravado!',
     );
-    Navigator.pop(context, 'nao_realizado');
+    if (!mounted) return;
+    if (fechar) {
+      Navigator.pop(context, true);
+    } else {
+      setState(() => _enviando = false);
+    }
   }
 
   @override
@@ -94,14 +105,14 @@ class _NaoRealizadoScreenState extends State<NaoRealizadoScreen> {
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: _motivosNaoRealizado.map((motivo) {
-                      final isSelecionado = _motivoSelecionado == motivo;
+                    children: _motivosNaoRealizado.entries.map((motivo) {
+                      final isSelecionado = _motivoSelecionado == motivo.key;
                       return ChoiceChip(
-                        label: Text(motivo),
+                        label: Text(motivo.value),
                         selected: isSelecionado,
                         onSelected: (selecionado) {
                           setState(() {
-                            _motivoSelecionado = selecionado ? motivo : null;
+                            _motivoSelecionado = selecionado ? motivo.key : null;
                           });
                         },
                         backgroundColor: cores.surfaceContainerHighest,
@@ -146,7 +157,9 @@ class _NaoRealizadoScreenState extends State<NaoRealizadoScreen> {
                   backgroundColor: cores.error,
                   foregroundColor: cores.surface,
                 ),
-                onPressed: _motivoSelecionado != null ? _confirmar : null,
+                onPressed: _motivoSelecionado != null && !_enviando
+                    ? () => _confirmar(item, _motivoSelecionado!)
+                    : null,
                 icon: const Icon(Icons.warning_amber_rounded),
                 label: const Text('Confirmar registro'),
               ),

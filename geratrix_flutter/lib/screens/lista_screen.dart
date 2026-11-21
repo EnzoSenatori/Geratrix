@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../dados/dados_exemplo.dart';
 import '../models/item_rotina.dart';
 import '../routes.dart';
+import '../services/api.dart';
+import '../services/sessao_expirada.dart';
 
 // Tela central do plantão: lista de tarefas do agora
 class ListaScreen extends StatefulWidget {
@@ -15,10 +16,55 @@ class ListaScreen extends StatefulWidget {
 class _ListaScreenState extends State<ListaScreen> {
   String _filtroAtual = 'Todos';
 
-  // Cópia local mutável dos itens da rotina do dia
-  final List<ItemRotina> _itens = List<ItemRotina>.of(itensDoDia);
+  // Itens do turno vindos do backend; recarregados depois de cada registro
+  List<ItemRotina> _itens = [];
+  bool _carregando = true;
+  bool _falhou = false;
 
-  // Abre a tela de registro adequada e atualiza o estado com o retorno
+  @override
+  void initState() {
+    super.initState();
+    _carregar();
+  }
+
+  // Busca os itens do turno na API; sem sessão (401), volta para os perfis
+  Future<void> _carregar() async {
+    setState(() {
+      _carregando = true;
+      _falhou = false;
+    });
+    try {
+      final itens = await Api.itensDoTurno();
+      if (mounted) {
+        setState(() {
+          _itens = itens;
+          _carregando = false;
+        });
+      }
+    } on SessaoExpirada {
+      if (mounted) voltarParaPerfis(context);
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _carregando = false;
+          _falhou = true;
+        });
+      }
+    }
+  }
+
+  // Sai da sessão no backend (sem encerrar o turno) e volta para os perfis
+  Future<void> _sair() async {
+    try {
+      await Api.sair();
+    } catch (_) {
+      // Mesmo sem resposta do servidor, o app volta para os perfis
+    }
+    if (!mounted) return;
+    Navigator.pushNamedAndRemoveUntil(context, AppRoutes.index, (route) => false);
+  }
+
+  // Abre a tela de registro adequada; se ela gravou algo (ou o item já estava registrado), recarrega a lista da API
   Future<void> _abrirRegistro(ItemRotina item) async {
     String rota = AppRoutes.checkin;
     if (item.natureza == 'medicao') rota = AppRoutes.checkinSinaisVitais;
@@ -26,14 +72,8 @@ class _ListaScreenState extends State<ListaScreen> {
     if (item.natureza == 'exercicio') rota = AppRoutes.exercicio;
 
     final resultado = await Navigator.pushNamed(context, rota, arguments: item);
-    if (!mounted || resultado is! String) return;
-
-    setState(() {
-      final indice = _itens.indexWhere((i) => i.id == item.id);
-      if (indice != -1) {
-        _itens[indice] = item.comStatus(resultado);
-      }
-    });
+    if (!mounted || resultado != true) return;
+    await _carregar();
   }
 
   Widget _montarFiltro(String rotulo, ColorScheme cores) {
@@ -82,17 +122,46 @@ class _ListaScreenState extends State<ListaScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout_rounded),
-            onPressed: () {
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                AppRoutes.index,
-                (route) => false,
-              );
-            },
+            onPressed: _sair,
           ),
         ],
       ),
-      body: Column(
+      body: _carregando
+          ? const Center(child: CircularProgressIndicator())
+          : _falhou
+              ? Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Não foi possível carregar a lista.',
+                        style: textos.bodyLarge?.copyWith(color: cores.onSurfaceVariant),
+                      ),
+                      const SizedBox(height: 12),
+                      FilledButton.icon(
+                        onPressed: _carregar,
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: const Text('Tentar de novo'),
+                      ),
+                    ],
+                  ),
+                )
+              : _montarLista(cores, textos, itensFiltrados, progresso),
+      floatingActionButton: _carregando || _falhou
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: () {
+                Navigator.pushNamed(context, AppRoutes.encerrarTurno, arguments: _itens);
+              },
+              icon: const Icon(Icons.stop_rounded),
+              label: const Text('Encerrar turno'),
+            ),
+    );
+  }
+
+  // Barra de progresso, filtros e cartões dos itens
+  Widget _montarLista(ColorScheme cores, TextTheme textos, List<ItemRotina> itensFiltrados, double progresso) {
+    return Column(
         children: [
           LinearProgressIndicator(
             value: progresso,
@@ -171,14 +240,6 @@ class _ListaScreenState extends State<ListaScreen> {
             ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.pushNamed(context, AppRoutes.encerrarTurno, arguments: _itens);
-        },
-        icon: const Icon(Icons.stop_rounded),
-        label: const Text('Encerrar turno'),
-      ),
     );
   }
 }

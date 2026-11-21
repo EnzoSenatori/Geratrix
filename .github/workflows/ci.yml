@@ -1,0 +1,180 @@
+# CI/CD do Geratrix: testes da API, provas OWASP (A01, A08) e build do Flutter web;
+# depois que tudo passa, publica no Azure App Service (só push na main ou workflow_dispatch na main)
+name: CI
+
+on:
+  push:
+    branches: [tcm/flutter-backend, developer, main]
+  pull_request:
+    branches: [tcm/flutter-backend, developer, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# PR novo cancela a execução anterior do mesmo PR; push entra na fila, para nunca cancelar um deploy em andamento
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  backend:
+    name: Backend (Python 3.10)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      # Mesma versão do Python do Azure App Service
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.10"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Instalar dependências
+        run: pip install -r backend/requirements.txt
+
+      # Testes da API num banco temporário (nunca o backend/geratrix.db)
+      - name: Testes da API
+        run: python -m unittest discover -s testes -v
+
+      # Falha se alguma prova não mostrar PROTEGIDO ou acusar VULNERÁVEL/FALHOU
+      - name: Provas OWASP A01 e A08
+        run: python testes/rodar_provas.py
+
+  flutter:
+    name: Flutter (analyze e build web)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: geratrix_flutter
+    steps:
+      - uses: actions/checkout@v7
+
+      # Mesma versão usada localmente
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.9
+          channel: stable
+          cache: true
+
+      - name: Versão do Flutter
+        run: flutter --version
+
+      - name: Dependências
+        run: flutter pub get
+
+      - name: Análise estática
+        run: flutter analyze
+
+      # Sem MQTT_SENHA: o build vai para o site público
+      - name: Build web
+        run: flutter build web --release --base-href /app/
+
+      # Só quando a execução vai publicar (mesma condição do job deploy): tira o canvaskit (vem do CDN) e o .last_build_id
+      - name: Preparar build para o deploy
+        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+        run: rm -rf build/web/canvaskit build/web/.last_build_id
+
+      # Entrega ao job deploy exatamente o build que passou no analyze
+      - name: Guardar build web
+        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v7
+        with:
+          name: flutter-web
+          path: geratrix_flutter/build/web
+          retention-days: 1
+          if-no-files-found: error
+
+  # ATENÇÃO: o banco do Azure é recriado a cada reinício do app, e todo deploy reinicia o app.
+  # Ou seja, cada deploy (inclusive voltar uma versão) zera o banco: registros, turnos e bloqueios de PIN voltam ao seed.
+  deploy:
+    name: Deploy no Azure
+    needs: [backend, flutter]
+    # Só a main publica (push ou workflow_dispatch); PR nunca publica
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    # Um deploy por vez no mesmo app, para todas as branches; um deploy em andamento nunca é cancelado
+    concurrency:
+      group: deploy-azure-geratrix
+      cancel-in-progress: false
+    env:
+      APP_URL: https://geratrix-backend-mvp.azurewebsites.net
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: flutter-web
+          path: flutter-ci
+
+      # Mesmo conteúdo do deploy manual: arquivos rastreados de backend/ na raiz, com o build web deste CI em flutter_web/
+      - name: Montar pacote
+        run: |
+          set -euo pipefail
+          rm -rf pacote geratrix.zip
+          mkdir pacote
+          git archive HEAD:backend | tar -x -C pacote
+          rm -rf pacote/flutter_web
+          cp -r flutter-ci pacote/flutter_web
+          rm -rf pacote/flutter_web/canvaskit pacote/flutter_web/.last_build_id
+
+      # Recusa o pacote se faltar algo essencial ou se entrar algo que não deve ir para o servidor
+      - name: Conferir pacote
+        run: |
+          set -euo pipefail
+          for proibido in geratrix.db testes flutter_web/canvaskit flutter_web/.last_build_id; do
+            if [ -e "pacote/$proibido" ]; then echo "::error::O pacote não pode ter $proibido"; exit 1; fi
+          done
+          if [ -n "$(find pacote -name __pycache__)" ]; then echo "::error::O pacote não pode ter __pycache__"; exit 1; fi
+          for obrigatorio in app.py requirements.txt .deployment flutter_web/index.html flutter_web/main.dart.js flutter_web/flutter_bootstrap.js flutter_web/assets/AssetManifest.bin.json; do
+            if [ ! -f "pacote/$obrigatorio" ]; then echo "::error::Falta $obrigatorio no pacote"; exit 1; fi
+          done
+          if ! grep -q '<base href="/app/">' pacote/flutter_web/index.html; then echo "::error::flutter_web sem base href /app/"; exit 1; fi
+          (cd pacote && find . -type f | sort)
+          du -sh pacote
+
+      - name: Compactar
+        run: cd pacote && zip -qr ../geratrix.zip . && ls -lh ../geratrix.zip
+
+      # O Azure instala as dependências (SCM_DO_BUILD_DURING_DEPLOYMENT=true); nenhuma configuração do app é alterada
+      - name: Publicar no Azure
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: geratrix-backend-mvp
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: geratrix.zip
+
+      # Teste de fumaça com tentativas (o plano gratuito demora a acordar); qualquer falha derruba o job
+      - name: Teste de fumaça
+        run: |
+          set -euo pipefail
+          buscar() {
+            for tentativa in $(seq 1 "${TENTATIVAS:-10}"); do
+              codigo=$(curl -s -o "$2" -w '%{http_code}' --max-time 60 "$APP_URL$1" || true)
+              echo "$1 -> HTTP $codigo (tentativa $tentativa)"
+              if [ "$codigo" = "200" ]; then return 0; fi
+              sleep "${ESPERA:-30}"
+            done
+            echo "::error::$1 não respondeu 200"
+            return 1
+          }
+          buscar / inicio.html
+          buscar /app/ app.html
+          if ! grep -q '<base href="/app/">' app.html; then echo "::error::/app/ não é o build do Flutter"; exit 1; fi
+          buscar /api/cuidadores cuidadores.json
+          python3 -c '
+          import json, sys
+          texto = open("cuidadores.json", encoding="utf-8").read()
+          dados = json.loads(texto)
+          assert isinstance(dados, list) and dados, "lista de cuidadores vazia"
+          for c in dados:
+              assert set(c) == {"id", "nome", "iniciais", "turno_padrao"}, "campos inesperados: %s" % sorted(c)
+          assert "pin" not in texto and "scrypt:" not in texto, "a resposta contém pin ou hash"
+          print("/api/cuidadores OK: %d cuidadores, sem pin" % len(dados))
+          '

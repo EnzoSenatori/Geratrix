@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/cuidador.dart';
 import '../routes.dart';
+import '../services/api.dart';
 import 'erro_screen.dart';
 
 // Tela de verificação de PIN de acesso do cuidador
@@ -14,8 +15,16 @@ class PinScreen extends StatefulWidget {
 
 class _PinScreenState extends State<PinScreen> {
   String _pin = '';
+  bool _enviando = false; // trava o teclado enquanto o backend confere o PIN
+  bool _bloqueado = false; // 429: teclado fica travado até o cuidador voltar
+  String? _erro; // mensagem do backend (mesmo texto da tela HTML)
 
+  // Teclado só responde quando não está enviando nem bloqueado
+  bool get _tecladoAtivo => !_enviando && !_bloqueado;
+
+  // Acrescenta um dígito; com 4 dígitos envia para o backend
   void _onTeclaPressionada(String valor) {
+    if (!_tecladoAtivo) return;
     if (_pin.length < 4) {
       setState(() {
         _pin += valor;
@@ -26,7 +35,9 @@ class _PinScreenState extends State<PinScreen> {
     }
   }
 
+  // Apaga o último dígito
   void _onApagar() {
+    if (!_tecladoAtivo) return;
     if (_pin.isNotEmpty) {
       setState(() {
         _pin = _pin.substring(0, _pin.length - 1);
@@ -34,24 +45,37 @@ class _PinScreenState extends State<PinScreen> {
     }
   }
 
-  void _validarPin() {
+  // Envia o PIN para o backend (hash + limite de tentativas) e segue para a lista ou para a abertura do turno
+  Future<void> _validarPin() async {
     final cuidador = ModalRoute.of(context)?.settings.arguments as Cuidador?;
-    // Aceita apenas o PIN do cuidador selecionado
-    if (cuidador != null && _pin == cuidador.pin) {
+    if (cuidador == null) return;
+
+    setState(() {
+      _enviando = true;
+      _erro = null;
+    });
+
+    try {
+      final resultado = await Api.entrar(cuidador.id, _pin);
+      if (!mounted) return;
       Navigator.pushReplacementNamed(
         context,
-        AppRoutes.abrirTurno,
-        arguments: cuidador,
+        resultado.turnoAberto ? AppRoutes.lista : AppRoutes.abrirTurno,
       );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('PIN incorreto. Tente novamente.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+    } on ErroApi catch (erro) {
+      if (!mounted) return;
       setState(() {
+        _erro = erro.mensagem;
+        _bloqueado = erro.bloqueado;
         _pin = '';
+        _enviando = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _erro = 'Não foi possível falar com o servidor. Tente novamente.';
+        _pin = '';
+        _enviando = false;
       });
     }
   }
@@ -70,14 +94,14 @@ class _PinScreenState extends State<PinScreen> {
 
   Widget _montarTecla(String rotulo, ColorScheme cores, TextTheme textos) {
     return InkWell(
-      onTap: () => _onTeclaPressionada(rotulo),
+      onTap: _tecladoAtivo ? () => _onTeclaPressionada(rotulo) : null,
       borderRadius: BorderRadius.circular(40),
       child: Center(
         child: Text(
           rotulo,
           style: textos.headlineMedium?.copyWith(
             fontWeight: FontWeight.bold,
-            color: cores.onSurface,
+            color: _tecladoAtivo ? cores.onSurface : cores.onSurfaceVariant.withValues(alpha: 0.4),
           ),
         ),
       ),
@@ -136,6 +160,22 @@ class _PinScreenState extends State<PinScreen> {
                 _montarBolinha(3, cores),
               ],
             ),
+            const SizedBox(height: 24),
+
+            // Mensagem do backend: PIN incorreto, tentativas restantes ou bloqueio
+            if (_erro != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Text(
+                  _erro!,
+                  textAlign: TextAlign.center,
+                  style: textos.bodyLarge?.copyWith(
+                    color: cores.error,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            if (_enviando) const CircularProgressIndicator(),
             const Spacer(),
 
             // Teclado numérico
@@ -154,7 +194,7 @@ class _PinScreenState extends State<PinScreen> {
                   const SizedBox.shrink(),
                   _montarTecla('0', cores, textos),
                   IconButton(
-                    onPressed: _onApagar,
+                    onPressed: _tecladoAtivo ? _onApagar : null,
                     icon: const Icon(Icons.backspace_outlined),
                   ),
                 ],
