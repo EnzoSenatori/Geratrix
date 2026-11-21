@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geratrix</title>
+    <link rel="stylesheet" href="/css/base/style.css">
+    <link rel="stylesheet" href="/css/layout/page.css">
+    <link rel="stylesheet" href="/css/layout/back.css">
+    <link rel="stylesheet" href="/css/components/form.css">
+    <link rel="stylesheet" href="/css/components/button.css">
+    <link rel="stylesheet" href="/css/components/badge.css">
+</head>
+
+<body>
+    <div class="page">
+        <a class="back" href="/lista">← Voltar</a>
+
+        <header class="page__header">
+            <h1 class="page__title">{{ item.residente }}</h1>
+            <p class="page__subtitle">{{ item.tipo }} · {{ item.horario }}</p>
+            <span class="badge {% if status_item == 'Atrasado' %}badge--alert{% else %}badge--warning{% endif %}">{{ status_item }}</span>
+        </header>
+
+        <main>
+            <h2 class="page__section-title">Registrar medição</h2>
+
+            <form class="form" method="post">
+                <div class="form__group">
+                    <label class="form__label" for="valor">
+                        {{ item.tipo }} ({{ item.unidade }})
+                    </label>
+                    <input
+                        class="form__input {% if alerta_fora or erro %}form__input--invalid{% endif %}"
+                        type="number"
+                        id="valor"
+                        name="valor"
+                        inputmode="decimal"
+                        step="any"
+                        required
+                        value="{{ valor_digitado }}"
+                    >
+                    <p class="form__hint">
+                        Referência: {{ item.faixa_min|numero }}–{{ item.faixa_max|numero }} {{ item.unidade }}
+                    </p>
+                    {% if erro %}
+                    <p class="form__error">{{ erro }}</p>
+                    {% endif %}
+                    {% if alerta_fora %}
+                    <p class="form__error">
+                        <span class="badge badge--alert">Fora da faixa de referência</span>
+                    </p>
+                    <p class="form__hint">
+                        Comunique o responsável técnico (RT) do plantão. Confira o valor e confirme o registro.
+                    </p>
+                    <input type="hidden" name="confirmado" value="1">
+                    {% endif %}
+                </div>
+
+                <div class="form__group">
+                    <label class="form__label" for="observacao">
+                        Observação (opcional)
+                    </label>
+                    <textarea
+                        class="form__input form__textarea"
+                        id="observacao"
+                        name="observacao"
+                        rows="4"
+                        placeholder="Acrescente detalhes sobre a medição."
+                    >{{ request.form.get('observacao', '') }}</textarea>
+                </div>
+
+                <div class="form__actions">
+                    <button class="button button--primary button--block" type="submit">
+                        {% if alerta_fora %}Confirmar registro{% else %}Registrar medição{% endif %}
+                    </button>
+                    <a class="button button--block" href="/checkin/{{ item.id }}/nao-realizado">
+                        Não realizado
+                    </a>
+                </div>
+            </form>
+        </main>
+    </div>
+</body>
+
+</html>

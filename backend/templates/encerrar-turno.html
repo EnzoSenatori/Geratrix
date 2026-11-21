@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geratrix</title>
+    <link rel="stylesheet" href="/css/base/style.css">
+    <link rel="stylesheet" href="/css/layout/page.css">
+    <link rel="stylesheet" href="/css/layout/back.css">
+    <link rel="stylesheet" href="/css/components/shift.css">
+    <link rel="stylesheet" href="/css/components/list.css">
+    <link rel="stylesheet" href="/css/components/badge.css">
+    <link rel="stylesheet" href="/css/components/form.css">
+    <link rel="stylesheet" href="/css/components/button.css">
+</head>
+
+<body>
+    {% set horarios = {'Manhã': '07:00 – 13:00', 'Tarde': '13:00 – 19:00', 'Noite': '19:00 – 07:00'} %}
+    <div class="page">
+        <a class="back" href="/lista">← Voltar</a>
+
+        <header class="page__header">
+            <h1 class="page__title">Encerrar Turno</h1>
+            <p class="page__subtitle">Resumo e passagem de plantão</p>
+        </header>
+
+        <main>
+            <div class="shift">
+                <p class="shift__label">Turno {{ cuidador.turno_padrao }}</p>
+                <p class="shift__time">{{ horarios[cuidador.turno_padrao] }}</p>
+                <p class="shift__unit">Unidade Central · Cuidador: {{ cuidador.nome }}</p>
+            </div>
+
+            <h2 class="page__section-title">Pendências do Turno</h2>
+            <div class="list">
+                {% for p in pendentes %}
+                <div class="list__item">
+                    <a class="list__text list__text--link" href="/checkin/{{ p.id }}">
+                        <span><strong>{{ p.tipo }}</strong><br><small>Residente: {{ p.residente }} · {{ p.horario }}</small></span>
+                    </a>
+                    <span class="badge {% if p.status_calculado == 'atrasado' %}badge--alert{% else %}badge--warning{% endif %}">{{ p.status_calculado|capitalize }}</span>
+                </div>
+                {% else %}
+                <div class="list__item"><p class="list__text">Nenhuma pendência. Tudo registrado.</p></div>
+                {% endfor %}
+            </div>
+
+            <form class="form" method="post">
+                <div class="form__group">
+                    <label class="form__label" for="passagem">Passagem de Plantão / Observações</label>
+                    <textarea class="form__input form__textarea" id="passagem" name="passagem" rows="4" placeholder="Descreva as ocorrências relevantes do plantão..."></textarea>
+                </div>
+
+                <div class="form__actions">
+                    <button class="button button--primary button--block" type="submit">Encerrar Turno</button>
+                </div>
+            </form>
+        </main>
+    </div>
+</body>
+
+</html>

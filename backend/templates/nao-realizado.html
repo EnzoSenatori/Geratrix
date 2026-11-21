@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geratrix</title>
+    <link rel="stylesheet" href="/css/base/style.css">
+    <link rel="stylesheet" href="/css/layout/page.css">
+    <link rel="stylesheet" href="/css/layout/back.css">
+    <link rel="stylesheet" href="/css/components/form.css">
+    <link rel="stylesheet" href="/css/components/button.css">
+    <link rel="stylesheet" href="/css/components/badge.css">
+</head>
+
+<body>
+    <div class="page">
+        <a class="back" href="/checkin/{{ item.id }}">← Voltar</a>
+
+        <header class="page__header">
+            <h1 class="page__title">{{ item.residente }}</h1>
+            <p class="page__subtitle">{{ item.tipo }} · {{ item.horario }}</p>
+            <span class="badge badge--warning">Não realizado</span>
+        </header>
+
+        <main>
+            <h2 class="page__section-title">Justificar não realização</h2>
+
+            <form class="form" method="post">
+                <div class="form__group" role="radiogroup" aria-labelledby="motivo-label">
+                    <span class="form__label" id="motivo-label">Motivo</span>
+                    {% for chave, texto in motivos.items() %}
+                    <label class="form__option">
+                        <input type="radio" name="motivo" value="{{ chave }}">
+                        <span class="form__option-text">{{ texto }}</span>
+                    </label>
+                    {% endfor %}
+                    {% if erro %}
+                    <p class="form__error">{{ erro }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="form__group">
+                    <label class="form__label" for="observacao">
+                        Observação (opcional)
+                    </label>
+                    <textarea
+                        class="form__input form__textarea"
+                        id="observacao"
+                        name="observacao"
+                        rows="4"
+                        placeholder="Acrescente detalhes sobre o motivo."
+                    >{{ request.form.get('observacao', '') }}</textarea>
+                </div>
+
+                <div class="form__actions">
+                    <button class="button button--primary button--block" type="submit">
+                        Registrar justificativa
+                    </button>
+                    <a class="button button--block" href="/checkin/{{ item.id }}">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </main>
+    </div>
+</body>
+
+</html>

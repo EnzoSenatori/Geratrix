@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar tarefa - Geratrix</title>
+    <link rel="stylesheet" href="css/base/style.css">
+    <link rel="stylesheet" href="css/layout/page.css">
+    <link rel="stylesheet" href="css/layout/back.css">
+    <link rel="stylesheet" href="css/components/form.css">
+    <link rel="stylesheet" href="css/components/button.css">
+    <link rel="stylesheet" href="css/components/badge.css">
+</head>
+
+<body>
+    <div class="page">
+        <a class="back" href="lista.html">← Voltar</a>
+
+        <header class="page__header">
+            <h1 class="page__title">Maria das Graças</h1>
+            <p class="page__subtitle">Higiene oral · 10:30</p>
+            <span class="badge badge--warning">Pendente</span>
+        </header>
+
+        <main>
+            <h2 class="page__section-title">Registrar tarefa</h2>
+
+            <form class="form">
+                <div class="form__group">
+                    <label class="form__label" for="observacao">
+                        Observação (opcional)
+                    </label>
+                    <textarea
+                        class="form__input form__textarea"
+                        id="observacao"
+                        name="observacao"
+                        rows="4"
+                        placeholder="Descreva como foi a realização da tarefa."
+                    ></textarea>
+                </div>
+
+                <div class="form__actions">
+                    <a class="button button--primary button--block" href="lista.html">
+                        Registrar
+                    </a>
+                    <a class="button button--block" href="nao-realizado.html">
+                        Não realizado
+                    </a>
+                </div>
+            </form>
+        </main>
+    </div>
+</body>                                                                                                                     
+
+</html>

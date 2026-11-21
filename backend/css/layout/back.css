@@ -1,0 +1,14 @@
+/* back.css — bloco back: retorno à tela anterior */
+
+.back {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: 0.875rem;
+    color: #666666;
+    text-decoration: none;
+}
+
+.back:hover {
+    color: #1a6b5a;
+}

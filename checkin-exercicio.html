@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrar exercício — Geratrix</title>
+  <link rel="stylesheet" href="css/base/style.css">
+  <link rel="stylesheet" href="css/layout/page.css">
+  <link rel="stylesheet" href="css/layout/back.css">
+  <link rel="stylesheet" href="css/components/form.css">
+  <link rel="stylesheet" href="css/components/button.css">
+  <link rel="stylesheet" href="css/components/badge.css">
+  <link rel="stylesheet" href="css/components/device.css">
+  <link rel="stylesheet" href="css/components/prescription.css">
+  <link rel="stylesheet" href="css/components/series.css">
+  <link rel="stylesheet" href="css/components/scale.css">
+</head>
+<body>
+  <div class="page">
+    <header class="page__header">
+      <a class="back" href="lista.html">‹ Voltar</a>
+      <h1 class="page__title">Maria das Graças</h1>
+      <p class="page__subtitle">Extensão de joelho — 10:00</p>
+      <span class="badge badge--warning">Em execução</span>
+    </header>
+
+    <main>
+      <div class="device">
+        <span class="device__dot"></span>
+        <span class="device__name">Caneleira 01</span>
+        <span class="device__meta">Bateria 84% • Sinal bom</span>
+      </div>
+
+      <h2 class="page__section-title">Prescrição</h2>
+      <div class="prescription">
+        <div class="prescription__item">
+          <span class="prescription__value">3</span>
+          <span class="prescription__label">séries</span>
+        </div>
+        <div class="prescription__item">
+          <span class="prescription__value">10</span>
+          <span class="prescription__label">repetições</span>
+        </div>
+        <div class="prescription__item">
+          <span class="prescription__value">60°</span>
+          <span class="prescription__label">ADM mínima</span>
+        </div>
+        <div class="prescription__item">
+          <span class="prescription__value">60 s</span>
+          <span class="prescription__label">descanso</span>
+        </div>
+      </div>
+      <p class="prescription__note">Definida pelo gestor — enviada à caneleira às 10:02</p>
+
+      <h2 class="page__section-title">Séries</h2>
+      <table class="series">
+        <thead>
+          <tr>
+            <th>Série</th>
+            <th>Válidas</th>
+            <th>ADM média</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>10/10</td>
+            <td>72°</td>
+            <td><span class="badge badge--done">OK</span></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>8/10</td>
+            <td>63°</td>
+            <td><span class="badge badge--warning">2 abaixo da ADM</span></td>
+          </tr>
+          <tr class="series_row--running">
+            <td>3</td>
+            <td colspan="3">aguardando resumo da caneleira...</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 class="page__section-title">Avaliação do cuidador</h2>
+      <form class="form">
+        <div class="form__group">
+          <span class="form__label">Esforço percebido</span>
+          <div class="scale">
+            <button class="scale__item" type="button">Leve</button>
+            <button class="scale__item scale__item--active" type="button">Moderado</button>
+            <button class="scale__item" type="button">Intenso</button>
+          </div>
+        </div>
+
+        <div class="form__group">
+          <label class="form__label" for="obs">Observação (opcional)</label>
+          <textarea class="form__input form__textarea" id="obs" rows="3" placeholder="Ex.: relatou cansaço na 2ª série."></textarea>
+        </div>
+
+        <div class="form__actions">
+          <a class="button button--primary button--block" href="lista.html">Registrar exercício</a>
+          <a class="button button--block" href="checkin-tarefa.html">Registrar manualmente</a>
+        </div>
+      </form>
+    </main>
+  </div>
+</body>
+</html>

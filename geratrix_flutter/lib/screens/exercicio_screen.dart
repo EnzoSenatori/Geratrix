@@ -1,0 +1,282 @@
+import 'package:flutter/material.dart';
+
+import '../models/estado_caneleira.dart';
+import '../models/item_rotina.dart';
+import '../models/prescricao.dart';
+import '../models/sessao_exercicio.dart';
+import '../routes.dart';
+import '../services/api.dart';
+import '../services/caneleira_mqtt.dart';
+import '../services/registro.dart';
+import '../widgets/caneleira_card.dart';
+import '../widgets/serie_tile.dart';
+
+// Prescrição definida pelo gestor; por enquanto fixa e em memória, com valores curtos para teste
+const _series = 2;
+const _reps = 10;
+const _admMin = 60.0;
+const _velMax = 150.0;
+const _descanso = 10;
+
+// Registro de exercício com a caneleira: envia a prescrição e acompanha as séries
+class ExercicioScreen extends StatefulWidget {
+  const ExercicioScreen({super.key});
+
+  @override
+  State<ExercicioScreen> createState() => _ExercicioScreenState();
+}
+
+class _ExercicioScreenState extends State<ExercicioScreen> {
+  late final CaneleiraMqtt _mqtt;
+  bool _conectado = false;
+  EstadoCaneleira _estado = const EstadoCaneleira(online: false);
+  final _sessoes = <String, SessaoExercicio>{}; // por sid, na ordem em que chegaram
+  String? _sidAtual; // sessão iniciada por esta tela
+  DateTime? _enviadaEm;
+  bool _enviando = false; // trava os botões de registro enquanto a API grava
+
+  @override
+  void initState() {
+    super.initState();
+    _mqtt = CaneleiraMqtt(
+      onConexao: (conectado) {
+        if (!mounted) return;
+        setState(() => _conectado = conectado);
+      },
+      onEstado: (estado) {
+        if (!mounted) return;
+        setState(() => _estado = estado);
+      },
+      onSessao: _receberSessao,
+    );
+    _mqtt.conectar();
+  }
+
+  @override
+  void dispose() {
+    _mqtt.desconectar();
+    super.dispose();
+  }
+
+  // Guarda a sessão recebida e só depois confirma à caneleira, como pede o contrato
+  void _receberSessao(SessaoExercicio sessao) {
+    if (!mounted) return;
+    setState(() => _sessoes[sessao.sid] = sessao);
+    _mqtt.confirmar(sessao.sid, sessao.series.length);
+  }
+
+  // Cria a prescrição com um sid novo e a envia à caneleira
+  void _enviarPrescricao() {
+    final prescricao = Prescricao(
+      sid: 's${DateTime.now().millisecondsSinceEpoch.toRadixString(36)}',
+      series: _series,
+      reps: _reps,
+      admMin: _admMin,
+      velMax: _velMax,
+      descanso: _descanso,
+    );
+    _mqtt.enviarPrescricao(prescricao);
+    setState(() {
+      _sidAtual = prescricao.sid;
+      _enviadaEm = DateTime.now();
+    });
+  }
+
+  // Grava o exercício como tarefa realizada; a observação leva o resumo da caneleira, se houver sessão concluída
+  Future<void> _concluirExercicio(ItemRotina item) async {
+    final concluidas = _sessoes.values.where((sessao) => sessao.concluida).toList();
+    final observacao = concluidas.isEmpty
+        ? ''
+        : 'Caneleira: ${concluidas.last.series.length} série(s) concluída(s).';
+
+    setState(() => _enviando = true);
+    final fechar = await enviarRegistro(
+      context,
+      () => Api.registrarTarefa(item.id, observacao),
+      'Exercício registrado com sucesso!',
+    );
+    if (!mounted) return;
+    if (fechar) {
+      Navigator.pop(context, true);
+    } else {
+      setState(() => _enviando = false);
+    }
+  }
+
+  // Abre a tela de "não realizado" e, se gravou, volta para a lista pedindo para recarregar
+  Future<void> _registrarNaoRealizado(ItemRotina item) async {
+    final resultado = await Navigator.pushNamed(context, AppRoutes.naoRealizado, arguments: item);
+    if (!mounted || resultado == null) return;
+    Navigator.pop(context, resultado);
+  }
+
+  // Formata a hora como no mockup ("10:02")
+  String _formatarHora(DateTime hora) {
+    final h = hora.hour.toString().padLeft(2, '0');
+    final m = hora.minute.toString().padLeft(2, '0');
+    return '$h:$m';
+  }
+
+  // Monta um número da prescrição com o rótulo abaixo, como os painéis do guia visual
+  Widget _montarNumero(String valor, String rotulo) {
+    final textos = Theme.of(context).textTheme;
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            valor,
+            style: textos.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          Text(rotulo, style: textos.bodySmall, textAlign: TextAlign.center),
+        ],
+      ),
+    );
+  }
+
+  // Monta o título de uma seção de séries, com o status da sessão num chip à direita
+  Widget _montarTituloSessao(String titulo, SessaoExercicio? sessao) {
+    final cores = Theme.of(context).colorScheme;
+    final textos = Theme.of(context).textTheme;
+    final concluida = sessao?.concluida == true;
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            titulo,
+            style: textos.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+          ),
+        ),
+        Chip(
+          label: Text(sessao?.statusTexto ?? 'Aguardando'), // nulo: enviada, sem resumo ainda
+          labelStyle: textos.labelMedium?.copyWith(
+            color: concluida ? cores.onPrimaryContainer : cores.onSurfaceVariant,
+            fontWeight: FontWeight.w600,
+          ),
+          backgroundColor: concluida
+              ? cores.primaryContainer
+              : cores.surfaceContainerHighest,
+          side: BorderSide.none,
+          shape: const StadiumBorder(),
+          visualDensity: VisualDensity.compact,
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cores = Theme.of(context).colorScheme;
+    final textos = Theme.of(context).textTheme;
+    final tituloSecao = textos.titleLarge?.copyWith(fontWeight: FontWeight.w700);
+    final sessaoAtual = _sessoes[_sidAtual];
+    final enviadaEm = _enviadaEm;
+    // Prescrição enviada sem resposta, ou alguma sessão recebida que ainda não terminou
+    final emAndamento = (_sidAtual != null && sessaoAtual == null) ||
+        _sessoes.values.any((sessao) => !sessao.concluida);
+    final podeEnviar = _conectado && _estado.online && !emAndamento;
+    // Aberta pela lista do turno recebe o item; aberta pelo main_caneleira.dart não tem item e não registra
+    final item = ModalRoute.of(context)?.settings.arguments as ItemRotina?;
+
+    return Scaffold(
+      appBar: AppBar(), // botão de voltar quando a tela abre pela lista do app
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+          children: [
+            Text(
+              'Registrar exercício',
+              style: textos.headlineMedium?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Extensão de joelho com a caneleira',
+              style: textos.bodyLarge?.copyWith(color: cores.onSurfaceVariant),
+            ),
+            const SizedBox(height: 24),
+            CaneleiraCard(estado: _estado, conectado: _conectado),
+            const SizedBox(height: 24),
+            Text('Prescrição', style: tituloSecao),
+            const SizedBox(height: 12),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start, // números na mesma altura, mesmo com rótulo de duas linhas
+                      children: [
+                        _montarNumero('$_series', 'séries'),
+                        _montarNumero('$_reps', 'repetições'),
+                        _montarNumero('${_admMin.toStringAsFixed(0)}°', 'ADM mínima'),
+                        _montarNumero('$_descanso s', 'descanso'),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      enviadaEm == null
+                          ? 'Definida pelo gestor'
+                          : 'Enviada à caneleira às ${_formatarHora(enviadaEm)}',
+                      style: textos.bodySmall?.copyWith(
+                        color: cores.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            FilledButton(
+              onPressed: podeEnviar ? _enviarPrescricao : null,
+              child: const Text('Enviar à caneleira'),
+            ),
+            if (_sidAtual != null) ...[
+              const SizedBox(height: 24),
+              _montarTituloSessao('Séries', sessaoAtual),
+              const SizedBox(height: 12),
+              Card(
+                child: Column(
+                  children: [
+                    for (final serie in sessaoAtual?.series ?? const [])
+                      SerieTile(serie: serie),
+                    if (sessaoAtual?.concluida != true)
+                      const ListTile(
+                        title: Text('Aguardando resumo da caneleira...'),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+            for (final sessao in _sessoes.values)
+              if (sessao.sid != _sidAtual) ...[
+                const SizedBox(height: 24),
+                _montarTituloSessao('Sessão recuperada', sessao),
+                const SizedBox(height: 12),
+                Card(
+                  child: Column(
+                    children: [
+                      for (final serie in sessao.series) SerieTile(serie: serie),
+                    ],
+                  ),
+                ),
+              ],
+            // Registro do item no turno (só quando a tela veio da lista)
+            if (item != null) ...[
+              const SizedBox(height: 32),
+              FilledButton.icon(
+                onPressed: _enviando ? null : () => _concluirExercicio(item),
+                icon: const Icon(Icons.check_circle_rounded),
+                label: const Text('Concluir exercício'),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: _enviando ? null : () => _registrarNaoRealizado(item),
+                style: TextButton.styleFrom(foregroundColor: cores.error),
+                child: const Text('Não foi possível realizar'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}

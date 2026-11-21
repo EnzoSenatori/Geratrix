@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geratrix</title>
+    <link rel="stylesheet" href="/css/base/style.css">
+    <link rel="stylesheet" href="/css/layout/page.css">
+    <link rel="stylesheet" href="/css/layout/topbar.css">
+    <link rel="stylesheet" href="/css/layout/nav.css">
+    <link rel="stylesheet" href="/css/components/progress.css">
+    <link rel="stylesheet" href="/css/components/filter.css">
+    <link rel="stylesheet" href="/css/components/badge.css">
+    <link rel="stylesheet" href="/css/components/list.css">
+    <link rel="stylesheet" href="/css/components/button.css">
+</head>
+
+<body>
+    {% set cores = {'atrasado': 'badge--alert', 'pendente': 'badge--warning', 'feito': 'badge--done'} %}
+    {% set atual = filtro_atual if filtro_atual in ['atrasado', 'pendente', 'feito'] else 'todos' %}
+    <div class="page page--flush">
+        <header class="topbar">
+            <a class="topbar__back" href="/sair">← Sair</a>
+            <p class="topbar__label">Turno ativo · {{ cuidador.nome }}</p>
+            <h1 class="topbar__title">Minha lista</h1>
+
+            <div class="progress">
+                <div class="progress__bar">
+                    <div class="progress__fill" style="width: {{ progresso }}%;"></div>
+                </div>
+                <p class="progress__text">{{ feitos }} de {{ total }} concluídos · {{ atrasados }} atrasados</p>
+            </div>
+        </header>
+
+        <main class="page__content">
+            <div class="filter">
+                {% for chave, rotulo, link in [('todos', 'Todos', '/lista'), ('atrasado', 'Atrasados', '/lista?filtro=atrasado'), ('pendente', 'Pendentes', '/lista?filtro=pendente'), ('feito', 'Feitos', '/lista?filtro=feito')] %}
+                <a class="filter__item {% if atual == chave %}filter__item--active{% endif %}" href="{{ link }}" style="text-decoration: none;">{{ rotulo }}</a>
+                {% endfor %}
+            </div>
+
+            <ul class="list">
+                {% for item in itens %}
+                <li class="list__item">
+                    <span class="badge {{ cores[item.status_calculado] }}">{{ item.horario }}</span>
+                    {% if item.status_calculado == 'feito' %}
+                    <p class="list__text">
+                        {{ item.tipo }} — {{ item.residente }}
+                        {% if item.registro == 'nao_realizado' %}· não realizado{% elif item.fora_da_faixa == 1 %}· fora da faixa{% endif %}
+                    </p>
+                    {% else %}
+                    <a class="list__text list__text--link" href="/checkin/{{ item.id }}">
+                        {{ item.tipo }} — {{ item.residente }}
+                    </a>
+                    {% endif %}
+                </li>
+                {% else %}
+                <li class="list__item"><p class="list__text">Nenhum item neste filtro.</p></li>
+                {% endfor %}
+            </ul>
+        </main>
+
+        <nav class="nav">
+            <a class="nav__item nav__item--active" href="/lista">Lista</a>
+            <a class="nav__item" href="/turno/encerrar">Encerrar</a>
+        </nav>
+    </div>
+</body>
+
+</html>

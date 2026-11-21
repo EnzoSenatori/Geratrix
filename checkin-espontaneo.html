@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar observação - Geratrix</title>
+    <link rel="stylesheet" href="css/base/style.css">
+    <link rel="stylesheet" href="css/layout/page.css">
+    <link rel="stylesheet" href="css/layout/back.css">
+    <link rel="stylesheet" href="css/components/form.css">
+    <link rel="stylesheet" href="css/components/button.css">
+</head>
+
+<body>
+    <div class="page">
+        <a class="back" href="lista.html">← Voltar</a>
+
+        <header class="page__header">
+            <h1 class="page__title">Nova observação</h1>
+            <p class="page__subtitle">Registro fora da rotina do turno</p>
+        </header>
+
+        <main>
+            <h2 class="page__section-title">Registrar ocorrência</h2>
+
+            <form class="form">
+                <div class="form__group">
+                    <label class="form__label" for="residente">Residente</label>
+                    <select class="form__input" id="residente" name="residente">
+                        <option value="" selected disabled>Selecione um residente</option>
+                        <option value="maria-das-gracas">Maria das Graças</option>
+                        <option value="antonio-ferreira">Antônio Ferreira</option>
+                        <option value="jose-augusto">José Augusto</option>
+                        <option value="terezinha-lima">Terezinha Lima</option>
+                    </select>
+                </div>
+
+                <div class="form__group">
+                    <label class="form__label" for="observacao">Observação</label>
+                    <textarea
+                        class="form__input form__textarea"
+                        id="observacao"
+                        name="observacao"
+                        rows="4"
+                        placeholder="Descreva o que aconteceu com o residente."
+                        aria-describedby="observacao-hint"
+                    ></textarea>
+                    <p class="form__hint" id="observacao-hint">
+                        Informe o horário e os detalhes da ocorrência.
+                    </p>
+                </div>
+
+                <div class="form__actions">
+                    <a class="button button--primary button--block" href="lista.html">
+                        Registrar observação
+                    </a>
+                    <a class="button button--block" href="lista.html">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </main>
+    </div>
+</body>
+
+</html>
